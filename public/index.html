@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07111d">
 <link rel="icon" href="logo.webp">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Senza Fiato">
 <meta property="og:title" content="Senza Fiato · Calcio a 5">
 <meta property="og:image" content="logo.webp">
 <title>I Senza Fiato</title>
@@ -294,7 +300,7 @@ tbody tr[data-act]:hover td{background:var(--surface-2)}
 .vote-row .field{flex:1 1 160px}
 
 /* FORMS */
-.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .form .full{grid-column:1/-1}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label{font-size:.78rem;font-weight:600;color:var(--muted)}
@@ -326,10 +332,8 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
   .hero .wrap{grid-template-columns:1fr;justify-items:start}
   .logo{width:140px;height:140px}
   .next{margin-left:0;width:100%}
-  .form,.poll-cols,.qarow{grid-template-columns:1fr}
+  .form,.poll-cols,.qarow{grid-template-columns:minmax(0,1fr)}
   .pghead{display:none}
-  .pgrow{grid-template-columns:1fr 1fr 1fr 1fr}
-  .pgrow .pgname,.pgrow .nt{grid-column:1/-1}
   .honors{grid-template-columns:1fr}
   .board .sc{font-size:2.4rem}
   .fx{grid-template-columns:52px 1fr auto;gap:10px}
@@ -341,6 +345,146 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 }
 @media (prefers-reduced-motion:reduce){.ticker-in{animation:none}.stk-in{transition:none}}
 @media (prefers-reduced-motion:no-preference){.fx,.btn,.tab{transition:border-color .15s,background .15s,color .15s}}
+
+/* ===== TELEFONO: struttura da app ===== */
+.hero{padding-top:env(safe-area-inset-top,0px)}
+.bnav,.fab{display:none}
+.lb-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-bottom:12px}
+.lb-chips::-webkit-scrollbar{display:none}
+.lb-chips .chip{white-space:nowrap;min-height:38px}
+.lb{display:flex;flex-direction:column;gap:8px}
+.lb-row{display:grid;grid-template-columns:30px 44px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;text-align:left;width:100%}
+.lb-row.p1{border-color:var(--gold)}.lb-row.p2{border-color:#b8c4cf}.lb-row.p3{border-color:#c47436}
+.lb-pos{font-family:var(--f-display);font-weight:900;font-size:1.35rem;color:var(--muted);text-align:center}
+.lb-row.p1 .lb-pos{color:var(--gold)}.lb-row.p2 .lb-pos{color:#dfe7ee}.lb-row.p3 .lb-pos{color:#e7a06c}
+.lb-av{width:44px;height:44px;border-radius:50%;overflow:hidden;background:var(--surface-2);display:grid;place-items:center;font-family:var(--f-brush);color:var(--neon);font-size:1.05rem}
+.lb-av img{width:100%;height:100%;object-fit:cover}
+.lb-name{min-width:0}
+.lb-name b{display:block;font-family:var(--f-display);font-weight:800;font-size:1.15rem;text-transform:uppercase;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-name span{display:block;font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-val{font-family:var(--f-display);font-weight:900;font-size:1.75rem;color:var(--neon);text-align:right;min-width:48px;line-height:1}
+.lb-val small{display:block;font-family:var(--f-body);font-size:.58rem;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.rowlist{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 12px}
+.rowlist .pgl-row{cursor:pointer}
+.rowlist .pgl-row:last-child{border-bottom:0}
+.dcol{font-family:var(--f-display);font-weight:800;text-align:center;line-height:1}
+.dcol b{display:block;font-size:1.3rem}.dcol span{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+/* pagelle nel modulo: schede con pulsanti */
+.pcards{display:flex;flex-direction:column;gap:8px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.pcard.off{background:transparent;border-style:dashed}
+.pcard.off .pc-body,.pcard.off .pnota{display:none}
+.pc-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.switch{display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer;font-weight:700;min-height:44px}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch .sw{flex:none;width:44px;height:26px;border-radius:13px;background:var(--surface-2);border:1px solid var(--line);position:relative;transition:background .15s}
+.switch .sw::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
+.switch input:checked+.sw{background:var(--neon-dim);border-color:var(--neon)}
+.switch input:checked+.sw::after{transform:translateX(18px);background:var(--neon)}
+.switch input:focus-visible+.sw{outline:3px solid var(--sweat);outline-offset:2px}
+.switch .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vstep{display:flex;align-items:center;gap:4px;flex:none}
+.sb{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:1.3rem;font-weight:700;cursor:pointer;display:grid;place-items:center;touch-action:manipulation}
+.sb:active{background:var(--line)}
+.vval{min-width:58px;height:40px;border-radius:20px;border:0;font-family:var(--f-display);font-weight:900;font-size:1.35rem;cursor:pointer;background:var(--surface-2);color:var(--muted)}
+.vval.g{background:var(--good-bg);color:var(--good)}.vval.m{background:var(--mid-bg);color:var(--mid)}.vval.b{background:var(--bad-bg);color:var(--bad)}
+.pc-body{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.mini-step{display:flex;align-items:center;gap:6px}
+.mini-step>span{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:42px}
+.mini-step .nv{min-width:22px;text-align:center;font-family:var(--f-display);font-weight:900;font-size:1.3rem}
+.ytog{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);font-size:.85rem;font-weight:700;cursor:pointer;color:var(--muted)}
+.ytog input{position:absolute;opacity:0;width:1px;height:1px}
+.ytog i{width:12px;height:16px;border-radius:2px;background:var(--line)}
+.ytog:has(input:checked){border-color:var(--gold);color:var(--gold)}
+.ytog:has(input:checked) i{background:var(--gold)}
+.ytog:has(input:focus-visible){outline:3px solid var(--sweat);outline-offset:2px}
+.pcard .pnota{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;font-size:16px}
+.score-ed{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;background:var(--surface);border:2px solid var(--neon);border-radius:14px;padding:12px;text-align:center}
+.score-ed .side>span{display:block;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-ed .big{font-family:var(--f-display);font-weight:900;font-size:2.6rem;line-height:1;color:var(--neon)}
+.score-ed .mini-step{justify-content:center}
+.score-ed .mini-step .nv{font-size:2.6rem;min-width:40px;color:var(--ink)}
+.score-ed small{display:block;font-size:.68rem;color:var(--muted);margin-top:4px}
+.score-ed .dash{font-family:var(--f-display);font-weight:900;font-size:2rem;color:var(--muted)}
+/* menu "Altro" e azioni Presidenza */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;min-height:96px}
+.tile svg{width:26px;height:26px;color:var(--neon)}
+.tile b{font-family:var(--f-display);font-weight:800;font-size:1.15rem;text-transform:uppercase;line-height:1}
+.tile span{font-size:.78rem;color:var(--muted);line-height:1.3}
+.tile.primary{background:var(--neon);border-color:var(--neon)}.tile.primary svg,.tile.primary b,.tile.primary span{color:var(--on-neon)}
+.tile[aria-current="page"]{border-color:var(--neon)}
+.install{background:var(--surface);border:1px dashed var(--neon-dim);border-radius:14px;padding:12px 14px;font-size:.88rem;color:var(--muted)}
+.install b{color:var(--ink)}
+.badge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top}
+
+@media (max-width:760px){
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  .hero .wrap{grid-template-columns:58px minmax(0,1fr);gap:10px 12px;padding-block:14px 14px;justify-items:stretch}
+  .logo{width:58px;height:58px}
+  .club-name{font-size:2rem;margin:2px 0 0;transform:rotate(-2deg)}
+  .hero .eyebrow{font-size:.6rem;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .motto{display:none}
+  .hide-m{display:none}
+  .hero-strip{padding-top:12px;gap:10px}
+  .rec{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;width:100%}
+  .rec div{align-items:center}
+  .rec b{font-size:1.5rem}.rec span{font-size:.52rem;letter-spacing:.04em;white-space:nowrap}
+  .formline{width:100%;justify-content:center}
+  .next{width:100%;margin:0;padding:10px 12px}
+  .tabs{display:none}
+  .pres{display:none}
+  main{padding-block:16px 20px}
+  .sec-head{margin:0 0 12px}
+  .sec-head h2{font-size:1.9rem}
+  .sec-head .eyebrow{width:100%}
+  .sec-head .chips{width:100%}
+  .sec-head .chips .chip{flex:1;min-height:40px}
+  footer{padding-block:14px 18px;font-size:.75rem}
+  #loginBtn{display:none}
+  .bnav{display:grid;position:fixed;left:0;right:0;bottom:0;z-index:15;grid-template-columns:repeat(5,1fr);background:rgba(7,17,29,.97);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+    padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .bn{border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.66rem;font-weight:700;padding:4px 0;border-radius:12px;cursor:pointer;min-height:52px;touch-action:manipulation}
+  .bn svg{width:25px;height:25px}
+  .bn[aria-current="page"]{color:var(--neon)}
+  .bn[aria-current="page"] svg{filter:drop-shadow(0 0 6px rgba(133,248,67,.55))}
+  .fab{display:grid;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:14;width:58px;height:58px;border-radius:50%;place-items:center;background:var(--neon);color:var(--on-neon);border:0;
+    box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 5px rgba(133,248,67,.16);font-size:2.1rem;font-weight:600;line-height:1;cursor:pointer}
+  .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .fx{padding:10px 12px;gap:10px;grid-template-columns:46px minmax(0,1fr) auto}
+  .fx-date b{font-size:1.6rem}
+  .fx-score{font-size:1.12rem}
+  .fx-title{font-size:.85rem}
+  .res{width:34px;height:34px;font-size:1.15rem}
+  .res.T{font-size:.58rem;padding:0 6px;height:auto;min-height:34px;width:min-content;text-align:center;line-height:1.1}
+  .pollcall .btn{width:100%}
+  .pgl-bar .field{max-width:none;flex-basis:100%}
+  .pgl-bar .btn{flex:1}
+  .btn{min-height:44px}
+  .btn.small{min-height:36px}
+  .field input,.field select,.field textarea{font-size:16px;min-height:46px}
+  /* finestre a comparsa dal basso */
+  .sheet{align-items:flex-end;padding:0;overflow:hidden}
+  .panel{max-width:none;border-radius:20px 20px 0 0;border-bottom:0;max-height:calc(100% - 24px - env(safe-area-inset-top,0px));display:flex;flex-direction:column}
+  .panel-hd{position:relative;padding:20px 16px 12px;flex:none}
+  .panel-hd::before{content:"";position:absolute;top:8px;left:50%;width:40px;height:4px;border-radius:2px;background:var(--line);transform:translateX(-50%)}
+  .panel-hd h2{font-size:1.35rem}
+  .panel-bd{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+  .panel-bd>.actions,.panel-bd>form>.actions{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom,0px));background:var(--bg);margin:0 -16px calc(-16px - env(safe-area-inset-bottom,0px));padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);z-index:2}
+  .panel-bd>.actions .right,.panel-bd>form>.actions .right{width:100%;margin-left:0}
+  .panel-bd>.actions .right .btn,.panel-bd>form>.actions .right .btn{flex:1}
+  .board .teams{font-size:1rem}
+  .vote-row .btn{width:100%}
+  .nameplate b{font-size:1.05rem}
+  .nameplate span{font-size:.62rem}
+  .stamp{right:10px}
+  .deal h3{padding-right:84px}
+}
+@media (max-width:760px) and (prefers-reduced-motion:no-preference){
+  .panel{animation:sheetUp .24s cubic-bezier(.2,.8,.2,1)}
+  @keyframes sheetUp{from{transform:translateY(40%);opacity:.4}to{transform:none;opacity:1}}
+}
+@media (min-width:761px){.more-only{display:none}}
 </style>
 </head>
 <body>
@@ -415,7 +559,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
   </section>
 
   <section data-sec="classifiche" hidden>
-    <div class="sec-head"><h2>Classifiche</h2><span class="eyebrow">Tocca una colonna per ordinare</span></div>
+    <div class="sec-head"><h2>Classifiche</h2><span class="eyebrow">Scegli la classifica</span></div>
     <div id="standings"></div>
   </section>
 
@@ -441,6 +585,15 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 
 
 </main>
+
+<nav class="bnav" aria-label="Sezioni">
+  <button class="bn" data-tab="partite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.5 4.4H9.7l-1.5-4.4z"/><path d="M12 3v4.5M20.6 9.6l-4.8.7M17.3 19.4l-3-4.7M6.7 19.4l3-4.7M3.4 9.6l4.8.7"/></svg><span>Partite</span></button>
+  <button class="bn" data-tab="pagellino"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M8.5 10h4M8.5 14h4M8.5 18h3"/><circle cx="16" cy="10" r=".6" fill="currentColor"/><circle cx="16" cy="14" r=".6" fill="currentColor"/></svg><span>Pagelle</span></button>
+  <button class="bn" data-tab="figurine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-8 8.5 12.5)"/><rect x="10" y="4" width="11" height="15" rx="2"/><circle cx="15.5" cy="10" r="2.2"/><path d="M12.5 16.5c.8-1.6 1.8-2.3 3-2.3s2.2.7 3 2.3"/></svg><span>Figurine</span></button>
+  <button class="bn" data-tab="mercato"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/></svg><span>Mercato</span></button>
+  <button class="bn" data-act="more" id="bnMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Altro</span></button>
+</nav>
+<button class="fab" id="fab" data-act="pres-menu" aria-label="Azioni della Presidenza" hidden>+</button>
 
 <footer><div class="wrap" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><span>Sito ufficiale (più o meno) dei Senza Fiato · Calcio a 5 · Ogni riferimento a calciatori veri è puramente ottimistico.</span><button class="btn small" data-act="login" id="loginBtn">Area Presidenza</button></div></footer>
 
@@ -496,7 +649,7 @@ function stats(){
 function renderHero(){
   $('clubName').textContent=club();
   $('clubMotto').textContent=S.info.motto||'Corriamo poco, ma col cuore. Il resto lo fa la bombola.';
-  $('heroEyebrow').textContent='Calcio a 5 · Est. 2026 · Stagione '+(S.info.stagione||'2026/27')+(S.info.presidente?' · Presidente '+S.info.presidente:'');
+  $('heroEyebrow').innerHTML='Calcio a 5<span class="hide-m"> · Est. 2026</span> · Stagione '+esc(S.info.stagione||'2026/27')+(S.info.presidente?'<span class="hide-m"> · Presidente '+esc(S.info.presidente)+'</span>':'');
   const pl=playedSorted();let v=0,n=0,p=0,gf=0,gs=0;
   for(const m of pl){const r=result(m);if(r==='V')v++;else if(r==='N')n++;else p++;gf+=goals(m);gs+=+m.golLoro||0}
   $('record').innerHTML=[['Giocate',pl.length],['Vinte',v],['Pari',n],['Perse',p],['Gol fatti',gf],['Gol subiti',gs]].map(([l,x])=>`<div><b>${x}</b><span>${l}</span></div>`).join('');
@@ -547,13 +700,20 @@ function renderAlbum(st){
       <div class="motto-s">${esc(p.motto||'')}</div><span class="btn small open" data-act="open-player" data-id="${p.id}">Scheda completa</span></div>
     </div></button>`}).join('')+'</div>';
 }
-const COLS=[['nome','Giocatore','l'],['pres','Pres.'],['gol','Gol'],['assist','Assist'],['ga','G+A'],['media','Media voto'],['mvp','MVP'],['bomb','Bombole'],['gialli','Gialli']];
+const METRICHE=[['gol','Gol','gol'],['assist','Assist','assist'],['ga','Gol+Assist','g+a'],['media','Media voto','media'],['mvp','MVP','mvp'],['popMvp','Voti del popolo','voti'],['pres','Presenze','pres.'],['bomb','Bombole','bombole'],['gialli','Gialli','gialli']];
 function renderStandings(st){
-  const rows=Object.values(st).filter(s=>S.players[s.id]).map(s=>({...s,nome:S.players[s.id].nome,ga:s.gol+s.assist}));
+  const rows=Object.values(st).filter(s=>S.players[s.id]).map(s=>({...s,p:S.players[s.id],ga:s.gol+s.assist}));
   if(!rows.length){$('standings').innerHTML=`<div class="empty"><b>Classifiche vuote</b>Si riempiono da sole con le pagelle delle partite.</div>`;return}
-  const {k,d}=S.sort;rows.sort((a,b)=>{const x=a[k],y=b[k];if(k==='nome')return d*x.localeCompare(y);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return d*(x-y)||b.pres-a.pres});
-  $('standings').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th class="rank">#</th>${COLS.map(([key,l,c])=>`<th class="${c||''}"><button data-sort="${key}" ${k===key?`aria-sort="${d<0?'descending':'ascending'}"`:''}>${l}${k===key?(d<0?' ↓':' ↑'):''}</button></th>`).join('')}</tr></thead><tbody>
-  ${rows.map((r,i)=>`<tr data-act="open-player" data-id="${r.id}"><td class="rank">${i+1}</td><td class="l"><b>${esc(r.nome)}</b></td><td>${r.pres}</td><td>${r.gol}</td><td>${r.assist}</td><td>${r.ga}</td><td>${r.media==null?'–':`<span class="vt ${vcls(r.media)}">${fmtV(r.media.toFixed(2))}</span>`}</td><td>${r.mvp}</td><td>${r.bomb}</td><td>${r.gialli}</td></tr>`).join('')}</tbody></table></div>`;
+  const k=METRICHE.some(m=>m[0]===S.sort.k)?S.sort.k:'gol';const met=METRICHE.find(m=>m[0]===k);
+  rows.sort((a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return b.pres-a.pres;if(x==null)return 1;if(y==null)return -1;return (y-x)||(b.pres-a.pres)});
+  let pos=0,prev=undefined;
+  $('standings').innerHTML=`<div class="lb-chips" role="tablist">${METRICHE.map(([key,l])=>`<button class="chip" data-sort="${key}" aria-pressed="${key===k}">${l}</button>`).join('')}</div>
+  <div class="lb">${rows.map((r,i)=>{const v=r[k];if(v!==prev){pos=i+1;prev=v}const has=v!=null&&(k==='media'||v>0);
+    const shown=k==='media'?(v==null?'–':fmtV(v.toFixed(2))):v;
+    return `<button class="lb-row ${has&&pos<=3?'p'+pos:''}" data-act="open-player" data-id="${r.id}"><span class="lb-pos">${has?pos:'–'}</span>
+      <span class="lb-av">${r.p.foto?`<img src="${esc(r.p.foto)}" alt="">`:esc(initials(r.p.nome))}</span>
+      <span class="lb-name"><b>${esc(r.p.nome)}</b><span>${r.pres} pres · ${r.gol} G · ${r.assist} A${r.media!=null?' · '+fmtV(r.media.toFixed(1)):''}</span></span>
+      <span class="lb-val">${shown}<small>${met[2]}</small></span></button>`}).join('')}</div>`;
 }
 function renderAwards(st){
   const arr=Object.values(st).filter(s=>S.players[s.id]);const minP=Math.max(1,Math.ceil(playedSorted().length/3));
@@ -861,17 +1021,34 @@ async function shareTrophy(id,btn){
   try{const blob=await drawTrophy(t);const slug=String(t.torneo||'torneo').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);sharePreview(blob,`trofeo-${slug}.png`,posTxt(t.posizione)+' posto · '+t.torneo)}
   catch(e){toast('Non sono riuscito a creare l\'immagine');btn.disabled=false;btn.textContent='Condividi'}
 }
+/* --- menu del telefono --- */
+const ICO={'partite': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.5 4.4H9.7l-1.5-4.4z"/><path d="M12 3v4.5M20.6 9.6l-4.8.7M17.3 19.4l-3-4.7M6.7 19.4l3-4.7M3.4 9.6l4.8.7"/></svg>', 'pagellino': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M8.5 10h4M8.5 14h4M8.5 18h3"/><circle cx="16" cy="10" r=".6" fill="currentColor"/><circle cx="16" cy="14" r=".6" fill="currentColor"/></svg>', 'figurine': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-8 8.5 12.5)"/><rect x="10" y="4" width="11" height="15" rx="2"/><circle cx="15.5" cy="10" r="2.2"/><path d="M12.5 16.5c.8-1.6 1.8-2.3 3-2.3s2.2.7 3 2.3"/></svg>', 'mercato': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/></svg>', 'altro': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>', 'classifiche': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><rect x="5" y="11" width="4" height="9" rx="1"/><rect x="10" y="5" width="4" height="15" rx="1"/><rect x="15" y="14" width="4" height="6" rx="1"/></svg>', 'premi': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M12 6.2l.9 1.9 2 .2-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.2z"/><path d="M8.5 14l-1.5 7 5-2.5 5 2.5-1.5-7"/></svg>', 'trofei': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4c0 3 1.5 4.5 3.3 4.8M17 6h3c0 3-1.5 4.5-3.3 4.8"/><path d="M12 14v4M8 21h8M9.5 18h5"/></svg>', 'stampa': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>', 'pres': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18l1.5-9 4.5 4 2-6 2 6 4.5-4L20 18z"/><path d="M4 21h16"/></svg>'};
+function moreSheet(){
+  const items=[['classifiche','Classifiche','Gol, assist, media voto'],['premi','Premi','Scarpa d\'oro, Bombola…'],['trofei','Trofei','La bacheca dei tornei'],['stampa','Sala stampa','Comunicati e conferenze']];
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  openSheet('Altro',`<div class="tiles">${items.map(([k,l,d])=>`<button class="tile" data-tab="${k}" ${S.tab===k?'aria-current="page"':''}>${ICO[k]}<b>${l}</b><span>${d}</span></button>`).join('')}</div>
+    ${S.isOwner?`<div class="tiles"><button class="tile primary" data-act="pres-menu">${ICO.pres}<b>Presidenza</b><span>Inserisci e modifica</span></button><button class="tile" data-act="logout">${ICO.pres}<b>Esci</b><span>Chiudi l'Area Presidenza</span></button></div>`
+      :`<button class="tile" style="width:100%;min-height:0;flex-direction:row;align-items:center" data-act="login">${ICO.pres}<div><b>Area Presidenza</b><br><span>Entra con il codice</span></div></button>`}
+    ${standalone?'':`<div class="install"><b>Mettilo sul telefono come un'app.</b> ${ios?'Su iPhone tocca il pulsante Condividi di Safari e poi «Aggiungi alla schermata Home».':'Apri il menu del browser (i tre puntini) e scegli «Installa app» o «Aggiungi a schermata Home».'}</div>`}`);
+}
+function presSheet(){
+  const a=[['new-match','Nuova partita','Risultato, pagelle, cronaca','partite',1],['new-player','Giocatore','Tessera un nuovo arrivo','figurine'],['new-deal','Mercato','Una nuova indiscrezione','mercato'],
+    ['new-conf','Conferenza','Parla il Presidente','stampa'],['new-trophy','Trofeo','Fine torneo in bacheca','trofei'],['new-news','Comunicato','Annuncio ufficiale','stampa'],['club','Società','Nome, motto, stagione','pres']];
+  openSheet('Area Presidenza',`<div class="tiles">${a.map(([act,l,d,ic,pr])=>`<button class="tile${pr?' primary':''}" data-act="${act}">${ICO[ic]}<b>${l}</b><span>${d}</span></button>`).join('')}</div>`);
+}
 function render(){
   const st=stats();renderHero();renderMatches();renderAlbum(st);renderStandings(st);renderAwards(st);renderMarket();renderPress();renderPagellino();renderTrophies();
-  $('presBar').hidden=!S.isOwner;$('loginBtn').hidden=S.isOwner;
+  $('presBar').hidden=!S.isOwner;$('loginBtn').hidden=S.isOwner;$('fab').hidden=!S.isOwner;
   if(sheetState.refresh)sheetState.refresh();
 }
 
 /* ---------- TABS ---------- */
 const TABS=['partite','pagellino','figurine','classifiche','premi','trofei','mercato','stampa'];
-function showTab(t){if(!TABS.includes(t))t='partite';
+const MORE=['classifiche','premi','trofei','stampa'];
+function showTab(t){if(!TABS.includes(t))t='partite';S.tab=t;
   document.querySelectorAll('[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==t);
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  document.querySelectorAll('.bn').forEach(b=>{const on=b.dataset.tab?b.dataset.tab===t:MORE.includes(t);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   try{localStorage.setItem('sf-tab',t)}catch(e){}}
 
 /* ---------- SHEET ---------- */
@@ -914,9 +1091,8 @@ function matchDetail(id){
   ${m.titolo||m.cronaca?`<div class="chron"><div class="eyebrow">La cronaca</div><h3>${esc(m.titolo||'')}</h3><p>${esc(m.cronaca||'')}</p></div>`:''}
   ${scor.length?`<div><div class="eyebrow" style="margin-bottom:6px">Marcatori</div><div class="scorers">${scor.join('')}</div></div>`:''}
   ${ass.length?`<div><div class="eyebrow" style="margin-bottom:6px">Assist</div><div class="scorers">${ass.join('')}</div></div>`:''}
-  ${rows.length?`<div><div class="eyebrow" style="margin-bottom:6px">Le pagelle</div><div class="tbl-wrap"><table><thead><tr><th class="l">Giocatore</th><th>Voto</th><th>Gol</th><th>Assist</th><th class="l">Giudizio</th></tr></thead><tbody>
-    ${rows.map(r=>`<tr data-act="open-player" data-id="${r.gid}"><td class="l"><b>${esc(pname(r.gid))}</b>${r.giallo?' <span title="Ammonito" style="display:inline-block;width:9px;height:12px;background:#ffd24a;border-radius:2px;vertical-align:-1px"></span>':''}</td>
-    <td>${r.voto!==''&&r.voto!=null?`<span class="vt ${vcls(+r.voto)}">${fmtV(+r.voto)}</span>`:'s.v.'}</td><td>${+r.gol||''}</td><td>${+r.assist||''}</td><td class="nota">${esc(r.nota||'')}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+  ${rows.length?`<div><div class="eyebrow" style="margin-bottom:6px">Le pagelle</div><div class="rowlist">${rows.map(r=>{const has=r.voto!==''&&r.voto!=null;const tags=[m.mvp===r.gid?'<span class="pgl-tag mvp">MVP</span>':'',m.bombola===r.gid?'<span class="pgl-tag bo">Bombola</span>':'',+r.gol?`<span class="pgl-tag">${r.gol} gol</span>`:'',+r.assist?`<span class="pgl-tag">${r.assist} ass.</span>`:'',r.giallo?'<span class="pgl-tag yc">Giallo</span>':''].join('');
+    return `<div class="pgl-row" data-act="open-player" data-id="${r.gid}"><span class="pgl-num">${esc((S.players[r.gid]||{}).numero||'–')}</span><div style="min-width:0"><div class="pgl-name">${esc(pname(r.gid))} ${tags}</div>${r.nota?`<div class="pgl-nota">${esc(r.nota)}</div>`:''}</div><span class="pgl-v ${has?vcls(+r.voto):'sv'}">${has?fmtV(+r.voto):'s.v.'}</span></div>`}).join('')}</div></div>`:''}
   ${pollBlock(m)}
   ${conf?`<div><div class="eyebrow" style="margin-bottom:6px;color:var(--sweat)">Dalla sala stampa</div><button class="btn sweat" data-act="go-press">${esc(conf.titolo)}</button></div>`:''}`
   :`<div class="empty"><b>Partita in programma</b>Pagelle, cronaca e sondaggio arrivano a fischio finale.</div>`}
@@ -931,8 +1107,9 @@ function playerDetail(id){
   const h=`<div style="display:flex;gap:14px;align-items:flex-start">${p.foto?`<img class="ph-prev" src="${esc(p.foto)}" alt="">`:''}<div><div class="eyebrow" style="color:var(--neon)">${esc(p.ruolo||'')}${p.numero?' · numero '+esc(p.numero):''}</div>
     ${p.soprannome?`<div class="brush" style="font-size:1.2rem">${esc(p.soprannome)}</div>`:''}${p.motto?`<p style="margin:8px 0 0">${esc(p.motto)}</p>`:''}</div></div>
   <div class="statgrid"><div><b>${s.pres}</b><span>Presenze</span></div><div><b>${s.gol}</b><span>Gol</span></div><div><b>${s.assist}</b><span>Assist</span></div><div><b>${fmtV(s.media==null?null:s.media.toFixed(2))}</b><span>Media</span></div><div><b>${s.mvp}</b><span>MVP</span></div><div><b>${s.bomb}</b><span>Bombole</span></div><div><b>${s.popMvp}</b><span>Voti MVP</span></div><div><b>${s.popBo}</b><span>Voti Bombola</span></div></div>
-  ${hist.length?`<div><div class="eyebrow" style="margin-bottom:6px">Partita per partita</div><div class="tbl-wrap"><table><thead><tr><th class="l">Data</th><th class="l">Avversario</th><th>Voto</th><th>Gol</th><th>Assist</th><th class="l">Giudizio</th></tr></thead><tbody>
-  ${hist.map(m=>{const r=m.pagelle[id];return `<tr data-act="open-match" data-id="${m.id}"><td class="l">${esc(fmtD(m.data,{day:'numeric',month:'short'}))}</td><td class="l">${esc(m.avversario)} <span style="color:var(--muted)">${goals(m)}–${+m.golLoro||0}</span></td><td>${r.voto!==''&&r.voto!=null?`<span class="vt ${vcls(+r.voto)}">${fmtV(+r.voto)}</span>`:'s.v.'}</td><td>${+r.gol||''}</td><td>${+r.assist||''}</td><td class="nota">${esc(r.nota||'')}</td></tr>`}).join('')}</tbody></table></div></div>`:'<div class="empty">Ancora nessuna presenza a referto.</div>'}
+  ${hist.length?`<div><div class="eyebrow" style="margin-bottom:6px">Partita per partita</div><div class="rowlist">${hist.map(m=>{const r=m.pagelle[id];const has=r.voto!==''&&r.voto!=null;const d=pd(m.data);
+    const tags=[m.mvp===id?'<span class="pgl-tag mvp">MVP</span>':'',m.bombola===id?'<span class="pgl-tag bo">Bombola</span>':'',+r.gol?`<span class="pgl-tag">${r.gol} gol</span>`:'',+r.assist?`<span class="pgl-tag">${r.assist} ass.</span>`:''].join('');
+    return `<div class="pgl-row" data-act="open-match" data-id="${m.id}"><span class="dcol"><b>${d?d.getDate():''}</b><span>${d?d.toLocaleDateString('it-IT',{month:'short'}):''}</span></span><div style="min-width:0"><div class="pgl-name" style="font-size:1.05rem">${esc(m.avversario)} <span style="color:var(--muted)">${goals(m)}–${+m.golLoro||0}</span> ${tags}</div>${r.nota?`<div class="pgl-nota">${esc(r.nota)}</div>`:''}</div><span class="pgl-v ${has?vcls(+r.voto):'sv'}">${has?fmtV(+r.voto):'s.v.'}</span></div>`}).join('')}</div></div>`:'<div class="empty">Ancora nessuna presenza a referto.</div>'}
   ${S.isOwner?`<div class="actions"><button class="btn primary" data-act="edit-player" data-id="${id}">Modifica giocatore</button></div>`:''}`;
   openSheet(p.nome,h,()=>playerDetail(id));
 }
@@ -958,17 +1135,16 @@ function matchForm(id){
     <div class="field full"><label for="m_luogo">Campo</label><input id="m_luogo" value="${esc(m.luogo||'')}" placeholder="Es. Centro sportivo, campo 2"></div>
     <label class="check full"><input type="checkbox" id="m_gioc" ${m.giocata?'checked':''}> Partita già giocata (inserisci risultato e pagelle)</label>
     <div class="full" id="m_played" ${m.giocata?'':'hidden'}><div class="form">
-      <div class="field"><label for="m_gl">Gol subiti</label><input id="m_gl" type="number" min="0" value="${+m.golLoro||0}"></div>
-      <div class="field"><label for="m_aut">Autoreti a nostro favore</label><input id="m_aut" type="number" min="0" value="${+m.autoreti||0}"></div>
-      <div class="full"><div class="eyebrow" style="margin-bottom:6px">Pagelle · spunta chi è sceso in campo · gol fatti: <b id="m_tot" style="color:var(--neon)">0</b></div>
-      ${ps.length?`<div class="pg"><div class="pgrow pghead"><span>Giocatore</span><span>Voto</span><span>Gol</span><span>Assist</span><span>Giallo</span><span>Giudizio</span></div>
-      ${ps.map(p=>{const r=pg[p.id];return `<div class="pgrow ${r?'':'off'}" data-gid="${p.id}">
-        <label class="pgname"><input type="checkbox" class="pin" id="pin_${p.id}" ${r?'checked':''}><span>${esc(p.numero?p.numero+' ':'')}${esc(p.nome)}</span></label>
-        <select class="pv" id="pv_${p.id}" aria-label="Voto">${VOTI.map(v=>opt(v,v===''?'Voto':fmtV(v),r?r.voto:'')).join('')}</select>
-        <input class="pgol" id="pg_${p.id}" type="number" min="0" aria-label="Gol" placeholder="Gol" value="${r&&+r.gol?r.gol:''}">
-        <input class="pas" id="pa_${p.id}" type="number" min="0" aria-label="Assist" placeholder="Ass." value="${r&&+r.assist?r.assist:''}">
-        <label class="yc"><input type="checkbox" class="pyc" id="py_${p.id}" ${r&&r.giallo?'checked':''}> <span>Giallo</span></label>
-        <input class="pnota nt" id="pn_${p.id}" aria-label="Giudizio" placeholder="Giudizio" value="${esc(r?r.nota||'':'')}"></div>`}).join('')}</div>`
+      <div class="full score-ed"><div class="side"><span>${esc(club())}</span><div class="big" id="m_tot">0</div><small>dai gol in pagella</small></div><span class="dash">–</span>
+        <div class="side"><span id="m_oppname">${esc(m.avversario||'Avversari')}</span>${stepper('m_gl',+m.golLoro||0,'Gol subiti')}<small>gol subiti</small></div></div>
+      <div class="field full"><label>Autoreti avversarie a nostro favore</label>${stepper('m_aut',+m.autoreti||0,'Autoreti')}</div>
+      <div class="full"><div class="eyebrow" style="margin-bottom:8px">Pagelle · accendi chi è sceso in campo</div>
+      ${ps.length?`<div class="pcards">${ps.map(p=>{const r=pg[p.id];const v=r&&r.voto!==''&&r.voto!=null?+r.voto:'';return `<div class="pcard ${r?'':'off'}" data-gid="${p.id}">
+        <div class="pc-top"><label class="switch"><input type="checkbox" class="pin" id="pin_${p.id}" ${r?'checked':''}><span class="sw"></span><span class="nm">${esc(p.numero?p.numero+' ':'')}${esc(p.nome)}</span></label>
+          <div class="vstep"><button type="button" class="sb" data-vstep="-1" aria-label="Abbassa voto">−</button><button type="button" class="vval ${v===''?'':vcls(v)}" data-vreset aria-label="Voto, tocca per senza voto">${v===''?'s.v.':fmtV(v)}</button><button type="button" class="sb" data-vstep="1" aria-label="Alza voto">+</button><input type="hidden" class="pv" id="pv_${p.id}" value="${v}"></div></div>
+        <div class="pc-body">${stepper('pg_'+p.id,r?+r.gol||0:0,'Gol','pgol')}${stepper('pa_'+p.id,r?+r.assist||0:0,'Assist','pas')}
+          <label class="ytog"><input type="checkbox" class="pyc" id="py_${p.id}" ${r&&r.giallo?'checked':''}><i></i>Giallo</label></div>
+        <input class="pnota nt" id="pn_${p.id}" aria-label="Giudizio" placeholder="Giudizio (es. Corre come un diesel)" value="${esc(r?r.nota||'':'')}"></div>`}).join('')}</div>`
       :'<div class="empty">Tessera prima i giocatori per dare i voti.</div>'}
       ${S.sample&&ps.length?`<div class="ai-row" style="margin-top:8px"><button type="button" class="btn sweat" id="aiNotesBtn" data-act="ai-notes">Scrivi i giudizi con Claude</button><span class="ai-msg" id="aiNotesMsg">Compila i giudizi vuoti partendo da voti, gol e assist.</span></div>`:''}</div>
       <div class="field"><label for="m_mvp">Polmone d'Acciaio (MVP)</label><select id="m_mvp">${opt('','–',m.mvp)}${ps.map(p=>opt(p.id,p.nome,m.mvp)).join('')}</select></div>
@@ -980,9 +1156,10 @@ function matchForm(id){
     ${formEnd(delBtn('del-match',id),'Salva partita')}</form>`;
   openSheet(id?'Modifica partita':'Nuova partita',h);$('fMatch').dataset.id=id||'';$('fMatch').dataset.poll=m.sondaggioChiuso?'1':'';updTot();
 }
-function updTot(){if(!$('fMatch'))return;let t=+($('m_aut')||{}).value||0;document.querySelectorAll('#fMatch .pgrow[data-gid]').forEach(r=>{if(r.querySelector('.pin').checked)t+=+r.querySelector('.pgol').value||0});const e=$('m_tot');if(e)e.textContent=t}
+function stepper(id,val,label,cls){return `<div class="mini-step">${cls?`<span>${label}</span>`:''}<button type="button" class="sb" data-nstep="-1" aria-label="${label} meno uno">−</button><b class="nv">${val}</b><button type="button" class="sb" data-nstep="1" aria-label="${label} più uno">+</button><input type="hidden" ${cls?`class="${cls}"`:''} id="${id}" value="${val}"></div>`}
+function updTot(){if(!$('fMatch'))return;let t=+($('m_aut')||{}).value||0;document.querySelectorAll('#fMatch .pcard[data-gid]').forEach(r=>{if(r.querySelector('.pin').checked)t+=+r.querySelector('.pgol').value||0});const e=$('m_tot');if(e)e.textContent=t}
 function readMatch(){
-  const pag={};document.querySelectorAll('#fMatch .pgrow[data-gid]').forEach(r=>{if(!r.querySelector('.pin').checked)return;
+  const pag={};document.querySelectorAll('#fMatch .pcard[data-gid]').forEach(r=>{if(!r.querySelector('.pin').checked)return;
     const v=r.querySelector('.pv').value;pag[r.dataset.gid]={voto:v===''?'':+v,gol:+r.querySelector('.pgol').value||0,assist:+r.querySelector('.pas').value||0,giallo:r.querySelector('.pyc').checked,nota:r.querySelector('.pnota').value.trim()}});
   const g=$('m_gioc').checked;
   return {avversario:$('m_avv').value.trim(),tipo:$('m_tipo').value,competizione:$('m_comp').value.trim(),fase:$('m_fase').value.trim(),data:$('m_data').value,ora:$('m_ora').value,luogo:$('m_luogo').value.trim(),
@@ -1198,8 +1375,9 @@ function aiConf(){const m=S.matches.find(x=>x.id===$('c_match').value);const tem
 /* ---------- EVENTS ---------- */
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-tab],[data-act],[data-sort],[data-f]');if(!t)return;
-  if(t.dataset.tab){showTab(t.dataset.tab);window.scrollTo({top:document.querySelector('.tabs').offsetTop,behavior:'instant'});return}
-  if(t.dataset.sort){const k=t.dataset.sort;S.sort=S.sort.k===k?{k,d:-S.sort.d}:{k,d:k==='nome'?1:-1};renderStandings(stats());return}
+  if(t.dataset.tab){const inSheet=!!t.closest('#sheet');showTab(t.dataset.tab);if(inSheet)closeSheet();
+    const mob=matchMedia('(max-width:760px)').matches;window.scrollTo({top:mob?document.querySelector('main').offsetTop-8:document.querySelector('.tabs').offsetTop,behavior:'instant'});return}
+  if(t.dataset.sort){S.sort={k:t.dataset.sort,d:-1};renderStandings(stats());return}
   if(t.dataset.f){S.filter=t.dataset.f;document.querySelectorAll('#matchFilter .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===t)));renderMatches();return}
   const a=t.dataset.act,id=t.dataset.id;
   if(a==='flip'){if(e.target.closest('.open'))return;t.classList.toggle('flip');flipped.has(id)?flipped.delete(id):flipped.add(id);return}
@@ -1232,20 +1410,32 @@ document.addEventListener('click',async e=>{
       t.disabled=true;try{await api('/api/vote',{voter:S.uid,matchId:id,mvp:mv,bombola:bo,codice:vc});try{if(vc)localStorage.setItem('sf-vcode',vc)}catch(e){}toast('Voto registrato');await load()}
       catch(e){toast(e.message||'Voto non registrato')}finally{t.disabled=false}break}
     case 'login':loginForm();break;
+    case 'more':moreSheet();break;
+    case 'pres-menu':presSheet();break;
     case 'logout':S.code='';S.isOwner=false;S.sample=null;try{localStorage.removeItem('sf-code')}catch(e){}closeSheet();render();toast('Uscito dall\'Area Presidenza');break;
     default:if(a&&a.startsWith('del-')){if(!arm(t))return;const c={'del-match':'partite','del-player':'giocatori','del-news':'comunicati','del-deal':'mercato','del-conf':'conferenze','del-trophy':'trofei'}[a];
       if(await write(()=>col(c).doc(id).delete(),'Eliminato'))closeSheet()}
   }
 });
+const VSTEPS=[3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10];
+function playOn(card){if(!card)return;const pin=card.querySelector('.pin');if(pin&&!pin.checked){pin.checked=true;card.classList.remove('off')}}
+document.addEventListener('click',e=>{
+  const n=e.target.closest('[data-nstep]');
+  if(n){const box=n.closest('.mini-step'),inp=box.querySelector('input'),val=Math.max(0,Math.min(99,(+inp.value||0)+(+n.dataset.nstep)));inp.value=val;box.querySelector('.nv').textContent=val;playOn(n.closest('.pcard'));updTot();return}
+  const vs=e.target.closest('[data-vstep],[data-vreset]');
+  if(vs){const box=vs.closest('.vstep'),inp=box.querySelector('.pv'),btn=box.querySelector('.vval');let v=inp.value===''?null:+inp.value;
+    if(vs.hasAttribute('data-vreset'))v=null;else{const d=+vs.dataset.vstep;if(v==null)v=6;else{const i=VSTEPS.indexOf(v);v=VSTEPS[Math.max(0,Math.min(VSTEPS.length-1,(i<0?6:i)+d))]}playOn(vs.closest('.pcard'))}
+    inp.value=v==null?'':v;btn.textContent=v==null?'s.v.':fmtV(v);btn.className='vval'+(v==null?'':' '+vcls(v));}
+});
 document.addEventListener('change',async e=>{
   if(e.target.id==='t_tsel'){$('t_altroF').hidden=e.target.value!=='__altro'}
   if(e.target.id==='pglSel'){S.pglId=e.target.value;renderPagellino();return}
   if(e.target.id==='m_gioc')$('m_played').hidden=!e.target.checked;
-  if(e.target.classList.contains('pin'))e.target.closest('.pgrow').classList.toggle('off',!e.target.checked);
+  if(e.target.classList.contains('pin'))e.target.closest('.pcard').classList.toggle('off',!e.target.checked);
   if(e.target.id==='p_foto'&&e.target.files[0]){try{pendingPhoto=await shrinkPhoto(e.target.files[0]);$('p_prev').src=pendingPhoto;$('p_prev').hidden=false;$('p_rm').hidden=false}catch(err){toast('Questa immagine non si apre, prova un JPG o PNG')}}
   updTot();
 });
-document.addEventListener('input',e=>{const r=e.target.closest&&e.target.closest('.pgrow[data-gid]');
+document.addEventListener('input',e=>{if(e.target.id==='m_avv'&&$('m_oppname'))$('m_oppname').textContent=e.target.value||'Avversari';const r=e.target.closest&&e.target.closest('.pcard[data-gid]');
   if(r&&e.target.matches('.pv,.pgol,.pas,.pnota')&&!r.querySelector('.pin').checked&&e.target.value){r.querySelector('.pin').checked=true;r.classList.remove('off')}
   if(e.target.id==='t_pos')trophyHint();
   if(e.target.matches('.pgol,#m_aut'))updTot()});
