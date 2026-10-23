@@ -4,7 +4,7 @@ import { getStore } from "@netlify/blobs";
 import { createHash, timingSafeEqual } from "node:crypto";
 import seed from "./seed.mjs";
 
-const COLLEZIONI = ["giocatori", "partite", "comunicati", "conferenze", "mercato", "club"];
+const COLLEZIONI = ["giocatori", "partite", "comunicati", "conferenze", "mercato", "trofei", "club"];
 const MAX_DOC = 400 * 1024; // le foto delle figurine stanno ben sotto
 
 const json = (data, status = 200) =>
