@@ -485,6 +485,36 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
   @keyframes sheetUp{from{transform:translateY(40%);opacity:.4}to{transform:none;opacity:1}}
 }
 @media (min-width:761px){.more-only{display:none}}
+
+/* ===== STAGIONI ===== */
+.season-pill{border:1px solid var(--neon-dim);background:rgba(133,248,67,.08);color:var(--ink);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.85rem;cursor:pointer;min-height:36px}
+.season-pill i{font-style:normal;color:var(--neon);font-size:.75rem;font-weight:700;margin-left:2px}
+.season-banner{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-top:14px;background:rgba(143,216,255,.08);border:1px solid var(--sweat);border-radius:12px;padding:10px 12px;font-size:.9rem}
+.season-banner b{color:var(--sweat)}
+.albo{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.albo-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.albo-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.albo-hd b{font-family:var(--f-display);font-weight:900;font-size:1.5rem;color:var(--gold)}
+.albo-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.albo-row:last-child{border-bottom:0}
+.albo-row span{color:var(--muted)}.albo-row.anti span{color:var(--sweat)}
+.albo-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.albo-row i{font-style:normal;font-family:var(--f-display);font-weight:800;color:var(--neon)}
+.albo-list .albo-row{cursor:pointer;padding:10px 0}
+.ann{display:flex;flex-direction:column;gap:16px}
+.ann-hero{display:flex;gap:14px;align-items:center;background:radial-gradient(ellipse 80% 120% at 0% 50%,rgba(133,248,67,.14),transparent 70%),var(--surface);border:2px solid var(--neon);border-radius:16px;padding:14px}
+.ann-hero img{width:72px;height:72px;border-radius:50%}
+.ann-season{font-family:var(--f-display);font-weight:900;font-size:2.6rem;line-height:1;color:var(--neon)}
+.ann-speech p{font-style:italic}
+.ann-speech .btn{margin-top:8px}
+.career{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;font-size:.9rem;color:var(--muted)}
+.career .eyebrow{display:block;margin-bottom:2px}.career b{color:var(--ink)}
+@media (max-width:760px){
+  .hero-strip .season-pill{order:-1}
+  .season-banner .btn{width:100%}
+  .albo{grid-template-columns:minmax(0,1fr)}
+  .ann-season{font-size:2.2rem}
+}
 </style>
 </head>
 <body>
@@ -499,6 +529,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
       <p class="motto" id="clubMotto">Corriamo poco, ma col cuore. Il resto lo fa la bombola.</p>
     </div>
     <div class="hero-strip">
+      <button class="season-pill" data-act="season" id="seasonBtn">Stagione</button>
       <div class="rec" id="record"></div>
       <div class="formline" id="formline"></div>
       <div class="next" id="nextMatch"></div>
@@ -516,10 +547,12 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
     <button class="tab" role="tab" data-tab="trofei">Trofei</button>
     <button class="tab" role="tab" data-tab="mercato">Calciomercato</button>
     <button class="tab" role="tab" data-tab="stampa">Sala stampa</button>
+    <button class="tab" role="tab" data-tab="annuario">Annuario</button>
   </div>
 </nav>
 
 <div class="wrap">
+  <div class="season-banner" id="seasonBanner" hidden></div>
   <div class="notice" id="noData" hidden>Non riesco a caricare i dati della società. Controlla la connessione e ricarica la pagina.</div>
   <div class="pres" id="presBar" hidden>
     <span class="eyebrow">Area Presidenza</span>
@@ -530,6 +563,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
     <button class="btn" data-act="new-trophy">Trofeo</button>
     <button class="btn" data-act="new-news">Comunicato</button>
     <button class="btn" data-act="club">Dati società</button>
+    <button class="btn" data-act="backup">Copia di sicurezza</button>
     <button class="btn small" data-act="logout" style="margin-left:auto">Esci</button>
   </div>
 </div>
@@ -578,6 +612,11 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
     <div id="market"></div>
   </section>
 
+  <section data-sec="annuario" hidden>
+    <div class="sec-head"><h2>Annuario</h2><span class="eyebrow" id="annSub"></span></div>
+    <div id="annuario"></div>
+  </section>
+
   <section data-sec="stampa" hidden>
     <div class="sec-head"><h2>Sala stampa</h2><span class="eyebrow">Comunicati e conferenze del Presidente</span></div>
     <div id="press"></div>
@@ -605,7 +644,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 
 <script>
 (function(){
-const S={info:{},players:{},matches:[],news:[],confs:[],deals:[],trophies:[],ballots:[],dl:null,pglId:'',isOwner:false,uid:null,db:null,sample:null,filter:'tutte',sort:{k:'gol',d:-1}};
+const S={info:{},players:{},allMatches:[],allNews:[],allConfs:[],allDeals:[],allTrophies:[],annuari:[],season:'',matches:[],news:[],confs:[],deals:[],trophies:[],ballots:[],dl:null,pglId:'',isOwner:false,uid:null,db:null,sample:null,filter:'tutte',sort:{k:'gol',d:-1}};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RUOLI=['Portiere','Difensore','Centrocampista','Attaccante','Tuttocampista','Panchinaro di lusso'];
@@ -627,6 +666,16 @@ function result(m){if(!m.giocata)return null;const a=goals(m),b=+m.golLoro||0;re
 function playedSorted(){return S.matches.filter(m=>m.giocata).sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.ora||'').localeCompare(a.ora||''))}
 function upcoming(){return S.matches.filter(m=>!m.giocata).sort((a,b)=>(a.data||'').localeCompare(b.data||'')||(a.ora||'').localeCompare(b.ora||''))}
 function rosterSorted(){return Object.values(S.players).sort((a,b)=>(+a.numero||99)-(+b.numero||99)||a.nome.localeCompare(b.nome))}
+/* --- stagioni: dal 1° settembre al 31 luglio, agosto conta come pre-campionato della stagione che inizia --- */
+function seasonOf(d){if(!d)d=today();const [y,m]=d.split('-').map(Number);const st=m>=8?y:y-1;return st+'/'+String((st+1)%100).padStart(2,'0')}
+function curSeason(){return seasonOf(today())}
+const seasonKey=x=>x.replace('/','-');
+const seasonLabel=x=>x==='sempre'?'Di sempre':'Stagione '+x;
+function allSeasons(){const set=new Set([curSeason()]);[S.allMatches,S.allDeals,S.allNews,S.allConfs,S.allTrophies].forEach(a=>a.forEach(x=>x.data&&set.add(seasonOf(x.data))));return [...set].sort().reverse()}
+const inSel=x=>S.season==='sempre'||seasonOf(x.data)===S.season;
+function applySeason(){if(!S.season)S.season=curSeason();S.matches=S.allMatches.filter(inSel);S.news=S.allNews.filter(inSel);S.confs=S.allConfs.filter(inSel);S.deals=S.allDeals.filter(inSel);S.trophies=S.allTrophies.filter(inSel)}
+function seasonRoster(st){if(S.season==='sempre')return rosterSorted();const played=new Set(Object.values(st).filter(x=>x.pres>0).map(x=>x.id));
+  return rosterSorted().filter(p=>played.has(p.id)||(S.season===curSeason()&&!p.ritirato))}
 function compLabel(m){return m.tipo==='torneo'?('Torneo'+(m.competizione?' · '+m.competizione:'')+(m.fase?' · '+m.fase:'')):'Amichevole'}
 function matchLabel(m){return (m.giocata?`${club()} ${goals(m)}-${+m.golLoro||0} ${m.avversario}`:`${club()} vs ${m.avversario}`)+' · '+fmtD(m.data,{day:'numeric',month:'short'})}
 
@@ -634,13 +683,13 @@ function matchLabel(m){return (m.giocata?`${club()} ${goals(m)}-${+m.golLoro||0}
 function tally(mid){const t={mvp:{},bo:{},n:0};for(const b of S.ballots){const v=(b.voti||{})[mid];if(!v)continue;t.n++;if(v.mvp)t.mvp[v.mvp]=(t.mvp[v.mvp]||0)+1;if(v.bombola)t.bo[v.bombola]=(t.bo[v.bombola]||0)+1}return t}
 function myVote(mid){return S.mine&&S.mine.voti?S.mine.voti[mid]:null}
 
-function stats(){
+function stats(ms){ms=ms||S.matches;const ids=new Set(ms.map(m=>m.id));
   const st={};for(const id in S.players)st[id]={id,pres:0,gol:0,assist:0,voti:[],mvp:0,bomb:0,gialli:0,popMvp:0,popBo:0};
-  for(const m of S.matches){if(!m.giocata)continue;
+  for(const m of ms){if(!m.giocata)continue;
     for(const [gid,p] of Object.entries(m.pagelle||{})){const s=st[gid];if(!s)continue;s.pres++;s.gol+=+p.gol||0;s.assist+=+p.assist||0;
       if(p.voto!==''&&p.voto!=null&&!isNaN(+p.voto))s.voti.push(+p.voto);if(p.giallo)s.gialli++}
     if(m.mvp&&st[m.mvp])st[m.mvp].mvp++;if(m.bombola&&st[m.bombola])st[m.bombola].bomb++}
-  for(const b of S.ballots)for(const v of Object.values(b.voti||{})){if(v.mvp&&st[v.mvp])st[v.mvp].popMvp++;if(v.bombola&&st[v.bombola])st[v.bombola].popBo++}
+  for(const b of S.ballots)for(const [mid,v] of Object.entries(b.voti||{})){if(!ids.has(mid))continue;if(v.mvp&&st[v.mvp])st[v.mvp].popMvp++;if(v.bombola&&st[v.bombola])st[v.bombola].popBo++}
   for(const id in st){const v=st[id].voti;st[id].media=v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
   return st;
 }
@@ -649,13 +698,15 @@ function stats(){
 function renderHero(){
   $('clubName').textContent=club();
   $('clubMotto').textContent=S.info.motto||'Corriamo poco, ma col cuore. Il resto lo fa la bombola.';
-  $('heroEyebrow').innerHTML='Calcio a 5<span class="hide-m"> · Est. 2026</span> · Stagione '+esc(S.info.stagione||'2026/27')+(S.info.presidente?'<span class="hide-m"> · Presidente '+esc(S.info.presidente)+'</span>':'');
+  $('heroEyebrow').innerHTML='Calcio a 5 · Est. 2026'+(S.info.presidente?'<span class="hide-m"> · Presidente '+esc(S.info.presidente)+'</span>':'');
+  $('seasonBtn').innerHTML=esc(seasonLabel(S.season))+(S.season===curSeason()?' <i>in corso</i>':'')+' <span aria-hidden="true">▾</span>';
+  const sb=$('seasonBanner');sb.hidden=S.season===curSeason();if(!sb.hidden)sb.innerHTML=`<span>Stai guardando: <b>${esc(seasonLabel(S.season))}</b></span><button class="btn small" data-season="${curSeason()}">Torna alla stagione in corso</button>`;
   const pl=playedSorted();let v=0,n=0,p=0,gf=0,gs=0;
   for(const m of pl){const r=result(m);if(r==='V')v++;else if(r==='N')n++;else p++;gf+=goals(m);gs+=+m.golLoro||0}
   $('record').innerHTML=[['Giocate',pl.length],['Vinte',v],['Pari',n],['Perse',p],['Gol fatti',gf],['Gol subiti',gs]].map(([l,x])=>`<div><b>${x}</b><span>${l}</span></div>`).join('');
   const last=pl.slice(0,5).reverse();
   $('formline').innerHTML=last.length?'<span class="lbl">Forma</span>'+last.map(m=>`<span class="fp ${result(m)}" title="${esc(m.avversario)}">${result(m)}</span>`).join(''):'';
-  const nx=upcoming().filter(m=>(m.data||'')>=today())[0];
+  const nx=S.allMatches.filter(m=>!m.giocata&&(m.data||'')>=today()).sort((a,b)=>(a.data||'').localeCompare(b.data||'')||(a.ora||'').localeCompare(b.ora||''))[0];
   $('nextMatch').innerHTML=nx?`<div class="eyebrow">Prossima partita</div><b>vs ${esc(nx.avversario)}</b><small>${esc(fmtD(nx.data,{weekday:'long',day:'numeric',month:'long'}))}${nx.ora?' · '+esc(nx.ora):''}${nx.luogo?' · '+esc(nx.luogo):''}</small>`
     :`<div class="eyebrow">Prossima partita</div><b>Da definire</b><small>Il Presidente sta trattando col campo</small>`;
 }
@@ -673,10 +724,10 @@ function fxRow(m){
 function renderMatches(){
   const f=S.filter;const ok=m=>f==='tutte'||(f==='torneo'?m.tipo==='torneo':m.tipo!=='torneo');
   const up=upcoming().filter(ok),pl=playedSorted().filter(ok);
-  const last=playedSorted()[0];
+  const last=S.season===curSeason()?S.allMatches.filter(m=>m.giocata).sort((a,b)=>(b.data||'').localeCompare(a.data||''))[0]:null;
   $('pollCall').innerHTML=last&&!last.sondaggioChiuso&&Object.keys(last.pagelle||{}).length?`<div class="pollcall"><div><div class="eyebrow" style="color:var(--neon)">Sondaggio aperto</div><b>Chi è stato il migliore e chi la bombola contro ${esc(last.avversario)}?</b></div><button class="btn primary" data-act="open-match" data-id="${last.id}">Vota ora</button></div>`:'';
   let h='';
-  if(!S.matches.length){h=`<div class="empty"><b>Nessuna partita ancora</b>${S.isOwner?'Inserisci la prima con «Nuova partita» qui sopra: risultato, pagelle, marcatori e cronaca.':'Qui compariranno risultati, pagelle e cronache appena la Presidenza inserisce la prima partita.'}</div>`}
+  if(!S.matches.length){h=`<div class="empty"><b>Nessuna partita ${S.season===curSeason()?'ancora':'in questa stagione'}</b>${S.season!==curSeason()?'':S.isOwner?'Inserisci la prima con «Nuova partita» qui sopra: risultato, pagelle, marcatori e cronaca.':'Qui compariranno risultati, pagelle e cronache appena la Presidenza inserisce la prima partita.'}</div>`}
   else{
     if(up.length)h+=`<div class="subhead">In programma</div><div class="fixtures">${up.map(fxRow).join('')}</div>`;
     h+=`<div class="subhead">Risultati</div>`+(pl.length?`<div class="fixtures">${pl.map(fxRow).join('')}</div>`:`<div class="empty">Nessun risultato in questa categoria.</div>`);
@@ -687,22 +738,22 @@ function initials(n){return String(n||'?').split(/\s+/).filter(Boolean).slice(0,
 function tier(s){return s.media!=null&&s.media>=7?'oro':s.media!=null&&s.media>=6?'argento':'base'}
 const flipped=new Set();
 function renderAlbum(st){
-  const ps=rosterSorted();const withPh=ps.filter(p=>p.foto).length;
-  $('albumCount').textContent=ps.length?`${withPh} su ${ps.length} con la foto`:'';
+  const ps=seasonRoster(st);const withPh=ps.filter(p=>p.foto).length;const car=S.season==='sempre'?null:stats(S.allMatches);
+  $('albumCount').textContent=(S.season==='sempre'?'Tutti i tesserati':'Album '+S.season)+(ps.length?` · ${withPh} su ${ps.length} con la foto`:'');
   if(!ps.length){$('album').innerHTML=`<div class="empty"><b>Album vuoto</b>${S.isOwner?'Tessera i giocatori con «Nuovo giocatore» e carica una foto: diventa la sua figurina.':'Le figurine arrivano appena la Presidenza tessera i giocatori.'}</div>`;return}
   $('album').innerHTML='<div class="album">'+ps.map(p=>{const s=st[p.id];const t=tier(s);
     return `<button class="stk ${t} ${flipped.has(p.id)?'flip':''}" data-act="flip" data-id="${p.id}" aria-label="Figurina di ${esc(p.nome)}"><div class="stk-in">
     <div class="face front"><div class="photo">${p.foto?`<img src="${esc(p.foto)}" alt="">`:`<span class="ini">${esc(initials(p.nome))}</span>`}
-      <span class="stk-num">${esc(p.numero||'–')}</span><span class="stk-tier">${t==='oro'?'Oro':t==='argento'?'Argento':'Base'}</span></div>
+      <span class="stk-num">${esc(p.numero||'–')}</span><span class="stk-tier">${p.ritirato?'Ritirato':t==='oro'?'Oro':t==='argento'?'Argento':'Base'}</span></div>
       <div class="nameplate"><b>${esc(p.nome)}</b><span>${esc(p.ruolo||'')}</span></div></div>
     <div class="face back"><h3>${esc(p.nome)}</h3><div class="nick">${p.soprannome?esc(p.soprannome):'&nbsp;'}</div>
-      <dl><dt>Presenze</dt><dd>${s.pres}</dd><dt>Gol</dt><dd>${s.gol}</dd><dt>Assist</dt><dd>${s.assist}</dd><dt>Media voto</dt><dd>${fmtV(s.media==null?null:s.media.toFixed(2))}</dd><dt>MVP</dt><dd>${s.mvp}</dd><dt>Bombole</dt><dd>${s.bomb}</dd></dl>
+      <dl><dt>Presenze</dt><dd>${s.pres}</dd><dt>Gol</dt><dd>${s.gol}</dd><dt>Assist</dt><dd>${s.assist}</dd><dt>Media voto</dt><dd>${fmtV(s.media==null?null:s.media.toFixed(2))}</dd><dt>MVP</dt><dd>${s.mvp}</dd><dt>Bombole</dt><dd>${s.bomb}</dd>${car?`<dt>Carriera</dt><dd>${car[p.id].pres} pres · ${car[p.id].gol} gol</dd>`:''}</dl>
       <div class="motto-s">${esc(p.motto||'')}</div><span class="btn small open" data-act="open-player" data-id="${p.id}">Scheda completa</span></div>
     </div></button>`}).join('')+'</div>';
 }
 const METRICHE=[['gol','Gol','gol'],['assist','Assist','assist'],['ga','Gol+Assist','g+a'],['media','Media voto','media'],['mvp','MVP','mvp'],['popMvp','Voti del popolo','voti'],['pres','Presenze','pres.'],['bomb','Bombole','bombole'],['gialli','Gialli','gialli']];
 function renderStandings(st){
-  const rows=Object.values(st).filter(s=>S.players[s.id]).map(s=>({...s,p:S.players[s.id],ga:s.gol+s.assist}));
+  const ids=new Set(seasonRoster(st).map(p=>p.id));const rows=Object.values(st).filter(s=>S.players[s.id]&&ids.has(s.id)).map(s=>({...s,p:S.players[s.id],ga:s.gol+s.assist}));
   if(!rows.length){$('standings').innerHTML=`<div class="empty"><b>Classifiche vuote</b>Si riempiono da sole con le pagelle delle partite.</div>`;return}
   const k=METRICHE.some(m=>m[0]===S.sort.k)?S.sort.k:'gol';const met=METRICHE.find(m=>m[0]===k);
   rows.sort((a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return b.pres-a.pres;if(x==null)return 1;if(y==null)return -1;return (y-x)||(b.pres-a.pres)});
@@ -715,22 +766,33 @@ function renderStandings(st){
       <span class="lb-name"><b>${esc(r.p.nome)}</b><span>${r.pres} pres · ${r.gol} G · ${r.assist} A${r.media!=null?' · '+fmtV(r.media.toFixed(1)):''}</span></span>
       <span class="lb-val">${shown}<small>${met[2]}</small></span></button>`}).join('')}</div>`;
 }
-function renderAwards(st){
-  const arr=Object.values(st).filter(s=>S.players[s.id]);const minP=Math.max(1,Math.ceil(playedSorted().length/3));
-  const top=(f,filt)=>{let best=null;for(const s of arr){if(filt&&!filt(s))continue;const v=f(s);if(v==null||v<=0)continue;if(!best||v>best.v)best={s,v}}return best};
-  const A=[
-    ['Scarpa d\'Oro','Capocannoniere della stagione','GOL',top(s=>s.gol),v=>v+' gol'],
-    ['Re dell\'Assist','Chi la passa, invece di tirare da centrocampo','AST',top(s=>s.assist),v=>v+' assist'],
-    ['Pallone d\'Oro','Miglior media voto (minimo '+minP+' presenze)','★',top(s=>s.media,s=>s.pres>=minP),v=>fmtV(v.toFixed(2))],
-    ['Polmone d\'Acciaio','Più volte MVP secondo la Presidenza','MVP',top(s=>s.mvp),v=>v+'×'],
-    ['Idolo del Popolo','Più voti MVP nei sondaggi dello spogliatoio','♥',top(s=>s.popMvp),v=>v+' voti','pop'],
-    ['Stakanovista','Non salta una partita, nemmeno con la febbre','∞',top(s=>s.pres),v=>v+' pres.'],
-    ['Bombola d\'Ossigeno','Più volte peggiore in campo. Gli serve aria.','O₂',top(s=>s.bomb),v=>v+'×','anti'],
-    ['Capro Espiatorio','Più voti Bombola nei sondaggi','?!',top(s=>s.popBo),v=>v+' voti','anti'],
-    ['Macellaio','Più cartellini gialli','GIA',top(s=>s.gialli),v=>v+' gialli','anti'],
+function awardList(st,nPlayed){
+  const arr=Object.values(st).filter(x=>S.players[x.id]);const minP=Math.max(1,Math.ceil(nPlayed/3));
+  const top=(f,filt)=>{let best=null;for(const x of arr){if(filt&&!filt(x))continue;const v=f(x);if(v==null||v<=0)continue;if(!best||v>best.v)best={s:x,v}}return best};
+  return [
+    ['Scarpa d\'Oro','Capocannoniere della stagione','GOL',top(x=>x.gol),v=>v+' gol'],
+    ['Re dell\'Assist','Chi la passa, invece di tirare da centrocampo','AST',top(x=>x.assist),v=>v+' assist'],
+    ['Pallone d\'Oro','Miglior media voto (minimo '+minP+' presenze)','★',top(x=>x.media,x=>x.pres>=minP),v=>fmtV(v.toFixed(2))],
+    ['Polmone d\'Acciaio','Più volte MVP secondo la Presidenza','MVP',top(x=>x.mvp),v=>v+'×'],
+    ['Idolo del Popolo','Più voti MVP nei sondaggi dello spogliatoio','♥',top(x=>x.popMvp),v=>v+' voti','pop'],
+    ['Stakanovista','Non salta una partita, nemmeno con la febbre','∞',top(x=>x.pres),v=>v+' pres.'],
+    ['Bombola d\'Ossigeno','Più volte peggiore in campo. Gli serve aria.','O₂',top(x=>x.bomb),v=>v+'×','anti'],
+    ['Capro Espiatorio','Più voti Bombola nei sondaggi','?!',top(x=>x.popBo),v=>v+' voti','anti'],
+    ['Macellaio','Più cartellini gialli','GIA',top(x=>x.gialli),v=>v+' gialli','anti'],
   ];
-  $('awards').innerHTML='<div class="awards">'+A.map(([t,why,m,w,f,cls])=>`<div class="aw ${cls||''}"><div class="medal">${m}</div><h3>${t}</h3><div class="why">${why}</div>
+}
+function seasonMatches(x){return S.allMatches.filter(m=>seasonOf(m.data)===x)}
+function renderAwards(st){
+  const A=awardList(st,playedSorted().length);
+  let h=`<div class="subhead" style="margin-top:0">${S.season==='sempre'?'Premi di sempre':S.season===curSeason()?'Premi della stagione in corso':'Premi '+S.season}</div>`;
+  h+='<div class="awards">'+A.map(([t,why,m,w,f,cls])=>`<div class="aw ${cls||''}"><div class="medal">${m}</div><h3>${t}</h3><div class="why">${S.season==='sempre'?why.replace('della stagione','di sempre'):why}</div>
     <div class="who">${w?`<b>${esc(S.players[w.s.id].nome)}</b><span>${f(w.v)}</span>`:'<b style="color:var(--muted);font-weight:500">Ancora nessuno</b><span></span>'}</div></div>`).join('')+'</div>';
+  const done=allSeasons().filter(x=>x<curSeason()&&seasonMatches(x).some(m=>m.giocata));
+  h+=`<div class="subhead">Albo d'oro</div>`;
+  if(!done.length)h+=`<div class="empty">L'Albo d'oro si riempie da solo: il 31 luglio i vincitori della stagione entrano qui per sempre.</div>`;
+  else h+='<div class="albo">'+done.map(x=>{const ms=seasonMatches(x);const L=awardList(stats(ms),ms.filter(m=>m.giocata).length);
+    return `<div class="albo-card"><div class="albo-hd"><b>${x}</b><button class="btn small" data-season="${x}" data-goto="annuario">Annuario</button></div>${L.filter(r=>r[3]).map(([t,,,w,f])=>`<div class="albo-row"><span>${t}</span><b>${esc(S.players[w.s.id].nome)}</b><i>${f(w.v)}</i></div>`).join('')||'<div class="ai-msg">Nessun premio assegnato.</div>'}</div>`}).join('')+'</div>';
+  $('awards').innerHTML=h;
 }
 function renderMarket(){
   const ds=[...S.deals].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
@@ -832,7 +894,7 @@ async function drawPagellino(m){
   return new Promise(res=>c.toBlob(res,'image/png'));
 }
 async function downloadPagellino(){
-  const m=S.matches.find(x=>x.id===S.pglId);if(!m)return;const b=$('pglDl');b.disabled=true;b.textContent='Preparo l\'immagine…';
+  const m=S.allMatches.find(x=>x.id===S.pglId);if(!m)return;const b=$('pglDl');b.disabled=true;b.textContent='Preparo l\'immagine…';
   try{const blob=await drawPagellino(m);const slug=(m.avversario||'partita').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
     sharePreview(blob,`pagellino-${slug}-${m.data||''}.png`,'Pagellino · '+club()+' '+goals(m)+'-'+(+m.golLoro||0)+' '+m.avversario)}
   catch(e){toast('Non sono riuscito a creare l\'immagine')}
@@ -908,7 +970,7 @@ async function drawDeal(d){
   return new Promise(res=>fin.toBlob(res,'image/png'));
 }
 async function shareDeal(id,btn){
-  const d=S.deals.find(x=>x.id===id);if(!d)return;btn.disabled=true;const t=btn.textContent;btn.textContent='Preparo…';
+  const d=S.allDeals.find(x=>x.id===id);if(!d)return;btn.disabled=true;const t=btn.textContent;btn.textContent='Preparo…';
   try{const blob=await drawDeal(d);const slug=String(d.giocatore||'mercato').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
     sharePreview(blob,`mercato-${slug}.png`,'Calciomercato · '+d.giocatore)}
   catch(e){toast('Non sono riuscito a creare l\'immagine')}finally{btn.disabled=false;btn.textContent=t}
@@ -932,8 +994,8 @@ function trophySvg(pos){
     <circle cx="50" cy="78" r="34" fill="url(#${g})" stroke="#85f843" stroke-width="4"/><circle cx="50" cy="78" r="26" fill="none" stroke="#85f843" stroke-opacity=".35" stroke-width="1.5"/>
     <text x="50" y="${big?89:91}" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="${big?28:34}" fill="#85f843">${pos}°</text></svg>`;
 }
-function tornei(){const set=new Set();S.matches.forEach(m=>{if(m.tipo==='torneo'&&m.competizione)set.add(m.competizione.trim())});S.trophies.forEach(t=>t.torneo&&set.add(t.torneo));return [...set].sort()}
-function tStats(name){const ms=S.matches.filter(m=>m.tipo==='torneo'&&(m.competizione||'').trim()===name&&m.giocata);let v=0,n=0,p=0,gf=0,gs=0;const sc={};
+function tornei(){const set=new Set();S.allMatches.forEach(m=>{if(m.tipo==='torneo'&&m.competizione)set.add(m.competizione.trim())});S.allTrophies.forEach(t=>t.torneo&&set.add(t.torneo));return [...set].sort()}
+function tStats(name){const ms=S.allMatches.filter(m=>m.tipo==='torneo'&&(m.competizione||'').trim()===name&&m.giocata);let v=0,n=0,p=0,gf=0,gs=0;const sc={};
   for(const m of ms){const r=result(m);if(r==='V')v++;else if(r==='N')n++;else p++;gf+=goals(m);gs+=+m.golLoro||0;for(const [g,x] of Object.entries(m.pagelle||{}))if(+x.gol)sc[g]=(sc[g]||0)+(+x.gol)}
   const top=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];return {n:ms.length,v,nn:n,p,gf,gs,top:top?{gid:top[0],gol:top[1]}:null}}
 function renderTrophies(){
@@ -946,7 +1008,7 @@ function renderTrophies(){
     <div class="tr-date">${esc(fmtD(t.data,{month:'long',year:'numeric'}))}${t.partecipanti?' · '+esc(t.partecipanti)+' squadre':''}</div></button>`).join('')+'</div></div>';
 }
 function trophyDetail(id){
-  const t=S.trophies.find(x=>x.id===id);if(!t){closeSheet();return}const st=tStats(t.torneo);
+  const t=S.allTrophies.find(x=>x.id===id);if(!t){closeSheet();return}const st=tStats(t.torneo);
   openSheet('Albo dei tornei',`<div class="trophy-hero"><div class="tr-icon">${trophySvg(t.posizione)}</div><div>
     <div class="eyebrow" style="color:var(--gold)">${t.posizione<=3?'Coppa '+tierOf(t.posizione).toLowerCase():'Medaglia'}${t.partecipanti?' · su '+esc(t.partecipanti)+' squadre':''}</div>
     <h3>${posTxt(t.posizione)} posto</h3><div style="margin-top:6px;font-weight:600">${esc(t.torneo)}</div>
@@ -957,7 +1019,7 @@ function trophyDetail(id){
     <div class="actions"><button class="btn primary" data-act="share-trophy" data-id="${t.id}">Condividi</button>${S.isOwner?`<button class="btn" data-act="edit-trophy" data-id="${t.id}">Modifica</button>`:''}</div>`,()=>trophyDetail(id));
 }
 function trophyForm(id){
-  const t=id?S.trophies.find(x=>x.id===id):{data:today(),posizione:''};const ts=tornei();
+  const t=id?S.allTrophies.find(x=>x.id===id):{data:today(),posizione:''};const ts=tornei();
   const sel=t.torneo&&ts.includes(t.torneo)?t.torneo:(t.torneo?'__altro':(ts[0]||'__altro'));
   const h=`<form class="form" id="fTrophy">
     <div class="field full"><label for="t_tsel">Torneo</label><select id="t_tsel">${ts.map(n=>opt(n,n,sel)).join('')}${opt('__altro','Altro torneo (scrivi il nome)',sel)}</select></div>
@@ -976,7 +1038,7 @@ function trophyName(){const v=$('t_tsel').value;return v==='__altro'?$('t_altro'
 function aiTrophy(){
   if($('t_nota').value.trim()){$('aiMsg').textContent='La nota è già scritta: svuotala se vuoi che la scriva Claude.';return}
   const name=trophyName(),pos=+$('t_pos').value;if(!name||!pos){$('aiMsg').textContent='Prima scegli torneo e posizione.';return}
-  const st=tStats(name);const ms=S.matches.filter(m=>m.tipo==='torneo'&&(m.competizione||'').trim()===name&&m.giocata).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const st=tStats(name);const ms=S.allMatches.filter(m=>m.tipo==='torneo'&&(m.competizione||'').trim()===name&&m.giocata).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
   ai(`Sei l'Ufficio Stampa. ${CTX()}
 I ${club()} hanno chiuso il torneo "${name}" al ${pos}° posto${$('t_part').value?' su '+$('t_part').value+' squadre':''}.
 ${st.n?`Bilancio: ${st.n} partite, ${st.v} vinte, ${st.nn} pari, ${st.p} perse, ${st.gf} gol fatti e ${st.gs} subiti.${st.top?' Capocannoniere: '+nameOf(st.top.gid)+' con '+st.top.gol+' gol.':''}\nRisultati: ${ms.map(m=>`${m.fase?m.fase+': ':''}${goals(m)}-${+m.golLoro||0} contro ${m.avversario}`).join('; ')}`:'Non ci sono risultati inseriti per questo torneo.'}
@@ -1017,34 +1079,135 @@ async function drawTrophy(t){
   return new Promise(res=>fin.toBlob(res,'image/png'));
 }
 async function shareTrophy(id,btn){
-  const t=S.trophies.find(x=>x.id===id);if(!t)return;btn.disabled=true;btn.textContent='Preparo…';
+  const t=S.allTrophies.find(x=>x.id===id);if(!t)return;btn.disabled=true;btn.textContent='Preparo…';
   try{const blob=await drawTrophy(t);const slug=String(t.torneo||'torneo').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);sharePreview(blob,`trofeo-${slug}.png`,posTxt(t.posizione)+' posto · '+t.torneo)}
   catch(e){toast('Non sono riuscito a creare l\'immagine');btn.disabled=false;btn.textContent='Condividi'}
 }
 /* --- menu del telefono --- */
-const ICO={'partite': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.5 4.4H9.7l-1.5-4.4z"/><path d="M12 3v4.5M20.6 9.6l-4.8.7M17.3 19.4l-3-4.7M6.7 19.4l3-4.7M3.4 9.6l4.8.7"/></svg>', 'pagellino': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M8.5 10h4M8.5 14h4M8.5 18h3"/><circle cx="16" cy="10" r=".6" fill="currentColor"/><circle cx="16" cy="14" r=".6" fill="currentColor"/></svg>', 'figurine': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-8 8.5 12.5)"/><rect x="10" y="4" width="11" height="15" rx="2"/><circle cx="15.5" cy="10" r="2.2"/><path d="M12.5 16.5c.8-1.6 1.8-2.3 3-2.3s2.2.7 3 2.3"/></svg>', 'mercato': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/></svg>', 'altro': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>', 'classifiche': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><rect x="5" y="11" width="4" height="9" rx="1"/><rect x="10" y="5" width="4" height="15" rx="1"/><rect x="15" y="14" width="4" height="6" rx="1"/></svg>', 'premi': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M12 6.2l.9 1.9 2 .2-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.2z"/><path d="M8.5 14l-1.5 7 5-2.5 5 2.5-1.5-7"/></svg>', 'trofei': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4c0 3 1.5 4.5 3.3 4.8M17 6h3c0 3-1.5 4.5-3.3 4.8"/><path d="M12 14v4M8 21h8M9.5 18h5"/></svg>', 'stampa': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>', 'pres': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18l1.5-9 4.5 4 2-6 2 6 4.5-4L20 18z"/><path d="M4 21h16"/></svg>'};
+const ICO={'annuario':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6"/></svg>','backup':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>','partite': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.5 4.4H9.7l-1.5-4.4z"/><path d="M12 3v4.5M20.6 9.6l-4.8.7M17.3 19.4l-3-4.7M6.7 19.4l3-4.7M3.4 9.6l4.8.7"/></svg>', 'pagellino': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M8.5 10h4M8.5 14h4M8.5 18h3"/><circle cx="16" cy="10" r=".6" fill="currentColor"/><circle cx="16" cy="14" r=".6" fill="currentColor"/></svg>', 'figurine': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="11" height="15" rx="2" transform="rotate(-8 8.5 12.5)"/><rect x="10" y="4" width="11" height="15" rx="2"/><circle cx="15.5" cy="10" r="2.2"/><path d="M12.5 16.5c.8-1.6 1.8-2.3 3-2.3s2.2.7 3 2.3"/></svg>', 'mercato': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/></svg>', 'altro': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>', 'classifiche': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><rect x="5" y="11" width="4" height="9" rx="1"/><rect x="10" y="5" width="4" height="15" rx="1"/><rect x="15" y="14" width="4" height="6" rx="1"/></svg>', 'premi': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M12 6.2l.9 1.9 2 .2-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.2z"/><path d="M8.5 14l-1.5 7 5-2.5 5 2.5-1.5-7"/></svg>', 'trofei': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4c0 3 1.5 4.5 3.3 4.8M17 6h3c0 3-1.5 4.5-3.3 4.8"/><path d="M12 14v4M8 21h8M9.5 18h5"/></svg>', 'stampa': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>', 'pres': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18l1.5-9 4.5 4 2-6 2 6 4.5-4L20 18z"/><path d="M4 21h16"/></svg>'};
 function moreSheet(){
-  const items=[['classifiche','Classifiche','Gol, assist, media voto'],['premi','Premi','Scarpa d\'oro, Bombola…'],['trofei','Trofei','La bacheca dei tornei'],['stampa','Sala stampa','Comunicati e conferenze']];
+  const items=[['classifiche','Classifiche','Gol, assist, media voto'],['premi','Premi','Scarpa d\'oro, Bombola…'],['trofei','Trofei','La bacheca dei tornei'],['stampa','Sala stampa','Comunicati e conferenze'],['annuario','Annuario','La stagione in una pagina'],['__season','Stagione','Cambia stagione o «Di sempre»']];
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-  openSheet('Altro',`<div class="tiles">${items.map(([k,l,d])=>`<button class="tile" data-tab="${k}" ${S.tab===k?'aria-current="page"':''}>${ICO[k]}<b>${l}</b><span>${d}</span></button>`).join('')}</div>
+  openSheet('Altro',`<div class="tiles">${items.map(([k,l,d])=>k==='__season'?`<button class="tile" data-act="season">${ICO.annuario}<b>${l}</b><span>${esc(seasonLabel(S.season))}</span></button>`:`<button class="tile" data-tab="${k}" ${S.tab===k?'aria-current="page"':''}>${ICO[k]}<b>${l}</b><span>${d}</span></button>`).join('')}</div>
     ${S.isOwner?`<div class="tiles"><button class="tile primary" data-act="pres-menu">${ICO.pres}<b>Presidenza</b><span>Inserisci e modifica</span></button><button class="tile" data-act="logout">${ICO.pres}<b>Esci</b><span>Chiudi l'Area Presidenza</span></button></div>`
       :`<button class="tile" style="width:100%;min-height:0;flex-direction:row;align-items:center" data-act="login">${ICO.pres}<div><b>Area Presidenza</b><br><span>Entra con il codice</span></div></button>`}
     ${standalone?'':`<div class="install"><b>Mettilo sul telefono come un'app.</b> ${ios?'Su iPhone tocca il pulsante Condividi di Safari e poi «Aggiungi alla schermata Home».':'Apri il menu del browser (i tre puntini) e scegli «Installa app» o «Aggiungi a schermata Home».'}</div>`}`);
 }
 function presSheet(){
   const a=[['new-match','Nuova partita','Risultato, pagelle, cronaca','partite',1],['new-player','Giocatore','Tessera un nuovo arrivo','figurine'],['new-deal','Mercato','Una nuova indiscrezione','mercato'],
-    ['new-conf','Conferenza','Parla il Presidente','stampa'],['new-trophy','Trofeo','Fine torneo in bacheca','trofei'],['new-news','Comunicato','Annuncio ufficiale','stampa'],['club','Società','Nome, motto, stagione','pres']];
+    ['new-conf','Conferenza','Parla il Presidente','stampa'],['new-trophy','Trofeo','Fine torneo in bacheca','trofei'],['new-news','Comunicato','Annuncio ufficiale','stampa'],['club','Società','Nome, motto, Presidente','pres'],['new-annuario','Discorso','Fine stagione, per l\'annuario','annuario'],['backup','Copia di sicurezza','Scarica tutti i dati','backup']];
   openSheet('Area Presidenza',`<div class="tiles">${a.map(([act,l,d,ic,pr])=>`<button class="tile${pr?' primary':''}" data-act="${act}">${ICO[ic]}<b>${l}</b><span>${d}</span></button>`).join('')}</div>`);
 }
+/* --- stagioni: selettore, annuario, copia di sicurezza --- */
+function prevSeason(){const c=curSeason();const y=+c.slice(0,4)-1;return y+'/'+String((y+1)%100).padStart(2,'0')}
+function seasonSheet(){
+  const list=allSeasons();
+  openSheet('Scegli la stagione',`<div class="tiles">${list.map(x=>{const n=seasonMatches(x).filter(m=>m.giocata).length;return `<button class="tile" data-season="${x}" ${S.season===x?'aria-current="page"':''}>${ICO.annuario}<b>${x}</b><span>${x===curSeason()?'In corso · ':''}${n} ${n===1?'partita giocata':'partite giocate'}</span></button>`}).join('')}
+    <button class="tile" data-season="sempre" ${S.season==='sempre'?'aria-current="page"':''}>${ICO.classifiche}<b>Di sempre</b><span>Tutte le stagioni insieme</span></button></div>
+    <div class="ai-msg">Ogni stagione va dal 1° settembre al 31 luglio. Agosto conta come pre-campionato della stagione che sta per iniziare.</div>`);
+}
+async function backup(){
+  try{const d=await api('/api/data');delete d.mine;d.esportato=new Date().toISOString();
+    S.dl.save({filename:`senza-fiato-backup-${today()}.json`,data:new Blob([JSON.stringify(d,null,1)],{type:'application/json'})});toast('Copia di sicurezza scaricata')}
+  catch(e){toast('Non sono riuscito a scaricare i dati')}
+}
+function annData(x){
+  const ms=seasonMatches(x).filter(m=>m.giocata).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  let v=0,n=0,p=0,gf=0,gs=0;for(const m of ms){const r=result(m);if(r==='V')v++;else if(r==='N')n++;else p++;gf+=goals(m);gs+=+m.golLoro||0}
+  const st=stats(ms);const aw=awardList(st,ms.length).filter(a=>a[3]);
+  const diff=m=>goals(m)-(+m.golLoro||0);
+  const bestW=ms.filter(m=>diff(m)>0).sort((a,b)=>diff(b)-diff(a))[0],worstL=ms.filter(m=>diff(m)<0).sort((a,b)=>diff(a)-diff(b))[0],
+    goleada=[...ms].sort((a,b)=>(goals(b)+(+b.golLoro||0))-(goals(a)+(+a.golLoro||0)))[0];
+  const tr=S.allTrophies.filter(t=>seasonOf(t.data)===x).sort((a,b)=>(a.posizione||99)-(b.posizione||99));
+  const ids=new Set(ms.map(m=>m.id));let votes=0;S.ballots.forEach(b=>Object.keys(b.voti||{}).forEach(k=>{if(ids.has(k))votes++}));
+  const speech=(S.annuari.find(a=>a.id===seasonKey(x))||{}).discorso||'';
+  return {x,ms,v,n,p,gf,gs,aw,bestW,worstL,goleada,tr,votes,speech,deals:S.allDeals.filter(d=>seasonOf(d.data)===x).length,
+    confs:S.allConfs.filter(c=>seasonOf(c.data)===x).length,players:Object.values(st).filter(y=>y.pres>0).length};
+}
+function renderAnnuario(){
+  if(S.season==='sempre'){$('annSub').textContent='';$('annuario').innerHTML=`<div class="empty"><b>Scegli una stagione</b>L'annuario racconta una stagione alla volta.</div><div class="tiles" style="margin-top:12px">${allSeasons().map(x=>`<button class="tile" data-season="${x}" data-goto="annuario">${ICO.annuario}<b>${x}</b><span>Apri l'annuario</span></button>`).join('')}</div>`;return}
+  const A=annData(S.season);const live=S.season===curSeason();
+  $('annSub').textContent=live?'Stagione in corso · si completa da solo fino al 31 luglio':'Stagione '+S.season+' · chiusa';
+  if(!A.ms.length){$('annuario').innerHTML=`<div class="empty"><b>Pagine ancora bianche</b>L'annuario si scrive da solo con le partite giocate in questa stagione.</div>${S.isOwner?'<button class="btn" style="margin-top:10px" data-act="new-annuario">Scrivi il discorso del Presidente</button>':''}`;return}
+  const mrow=(lbl,m)=>m?`<div class="pgl-row" data-act="open-match" data-id="${m.id}"><span class="dcol"><b>${pd(m.data).getDate()}</b><span>${pd(m.data).toLocaleDateString('it-IT',{month:'short'})}</span></span><div style="min-width:0"><div class="eyebrow">${lbl}</div><div class="pgl-name" style="font-size:1.1rem">${esc(club())} ${goals(m)}–${+m.golLoro||0} ${esc(m.avversario)}</div></div><span></span></div>`:'';
+  $('annuario').innerHTML=`<div class="ann">
+    <div class="ann-hero"><img src="logo.webp" alt=""><div><div class="eyebrow">Annuario ufficiale</div><div class="ann-season">${S.season}</div><div class="ai-msg">${A.players} giocatori scesi in campo · ${A.ms.length} partite</div></div></div>
+    <div class="statgrid"><div><b>${A.ms.length}</b><span>Giocate</span></div><div><b>${A.v}</b><span>Vinte</span></div><div><b>${A.n}</b><span>Pari</span></div><div><b>${A.p}</b><span>Perse</span></div><div><b>${A.gf}</b><span>Gol fatti</span></div><div><b>${A.gs}</b><span>Gol subiti</span></div></div>
+    ${A.speech?`<div class="chron ann-speech"><div class="eyebrow">Il discorso del Presidente</div><p>${esc(A.speech)}</p>${S.isOwner?`<button class="btn small" data-act="edit-speech" data-id="${S.season}">Modifica discorso</button>`:''}</div>`:S.isOwner?`<button class="btn sweat" data-act="edit-speech" data-id="${S.season}">Scrivi il discorso del Presidente</button>`:''}
+    <div><div class="subhead" style="margin-top:4px">I premi${live?' (per ora)':''}</div><div class="rowlist albo-list">${A.aw.map(([t,,m,w,f,cls])=>`<div class="albo-row ${cls||''}" data-act="open-player" data-id="${w.s.id}"><span>${t}</span><b>${esc(S.players[w.s.id].nome)}</b><i>${f(w.v)}</i></div>`).join('')}</div></div>
+    <div><div class="subhead">Partite da ricordare</div><div class="rowlist">${mrow('Vittoria più larga',A.bestW)}${mrow('Sconfitta più pesante',A.worstL)}${mrow('Partita con più gol',A.goleada)}</div></div>
+    ${A.tr.length?`<div><div class="subhead">Trofei della stagione</div><div class="scorers">${A.tr.map(t=>`<span data-act="open-trophy" data-id="${t.id}" style="cursor:pointer">${posTxt(t.posizione)} posto · ${esc(t.torneo)}</span>`).join('')}</div></div>`:''}
+    <div><div class="subhead">Numeri curiosi</div><div class="statgrid"><div><b>${fmtV((A.gf/A.ms.length).toFixed(1))}</b><span>Gol a partita</span></div><div><b>${A.votes}</b><span>Voti nei sondaggi</span></div><div><b>${A.deals}</b><span>Voci di mercato</span></div><div><b>${A.confs}</b><span>Conferenze</span></div></div></div>
+    <div class="actions"><button class="btn primary" data-act="share-ann">Condividi l'annuario</button></div>
+  </div>`;
+}
+function speechForm(x){
+  const cur=(S.annuari.find(a=>a.id===seasonKey(x))||{}).discorso||'';
+  openSheet('Discorso di fine stagione',`<form class="form" id="fSpeech"><div class="eyebrow full">Stagione ${x}</div>
+    <div class="field full"><label for="a_tema">Cosa vuoi dire (per Claude)</label><input id="a_tema" placeholder="Es. ringrazia i portieri, prometti il colpo di mercato"></div>
+    ${aiRow('ai-speech','Scrivi il discorso con Claude','Usa risultati, premi e trofei della stagione. Scrive solo se il discorso è vuoto.')}
+    <div class="field full"><label for="a_txt">Il discorso</label><textarea id="a_txt" style="min-height:200px">${esc(cur)}</textarea></div>
+    ${formEnd('','Salva nell\'annuario')}</form>`);
+  $('fSpeech').dataset.season=x;
+}
+function aiSpeech(){
+  if($('a_txt').value.trim()){$('aiMsg').textContent='Il discorso è già scritto: svuotalo se vuoi che lo scriva Claude.';return}
+  const A=annData($('fSpeech').dataset.season);
+  ai(`Scrivi il discorso di fine stagione del Presidente per l'annuario. ${CTX()}
+Stagione ${A.x}: ${A.ms.length} partite, ${A.v} vinte, ${A.n} pari, ${A.p} perse, ${A.gf} gol fatti, ${A.gs} subiti.
+Premi: ${A.aw.map(([t,,,w,f])=>t+': '+nameOf(w.s.id)+' ('+f(w.v)+')').join('; ')||'nessuno'}.
+${A.tr.length?'Tornei: '+A.tr.map(t=>t.torneo+' '+posTxt(t.posizione)+' posto').join('; ')+'.':''}
+${A.bestW?'Vittoria più larga: '+goals(A.bestW)+'-'+(+A.bestW.golLoro||0)+' contro '+A.bestW.avversario+'.':''}
+${A.worstL?'Sconfitta più pesante: '+goals(A.worstL)+'-'+(+A.worstL.golLoro||0)+' contro '+A.worstL.avversario+'.':''}
+${$('a_tema').value.trim()?'Il Presidente vuole assolutamente dire: '+$('a_tema').value.trim():''}
+Tono: commosso, solenne e autoironico, da presidente di Serie A a fine anno. 150-220 parole, 3 paragrafi. Usa solo i fatti qui sopra.
+Rispondi solo con un oggetto JSON: {"discorso": "testo con paragrafi separati da \n\n"}`,r=>{if(r.discorso&&!$('a_txt').value.trim())$('a_txt').value=String(r.discorso)});
+}
+async function drawAnnuario(A){
+  const DISP='"Big Shoulders Display", Impact, sans-serif',BODY='Barlow, Arial, sans-serif',BR='"Permanent Marker", cursive';
+  try{await Promise.all(['900 40px "Big Shoulders Display"','800 40px "Big Shoulders Display"','40px "Permanent Marker"','600 20px Barlow','italic 400 20px Barlow'].map(f=>document.fonts.load(f)))}catch(e){}
+  const W=1080;let H=3200;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const C={bg:'#07111d',neon:'#85f843',ink:'#eef5ea',muted:'#93a7b9',line:'#1f3550',gold:'#ffd24a',sweat:'#8fd8ff',card:'#0d1a2a'};
+  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(133,248,67,.06)';for(let i=0;i<W;i+=36){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,H);x.stroke()}for(let j=0;j<H;j+=36){x.beginPath();x.moveTo(0,j+.5);x.lineTo(W,j+.5);x.stroke()}
+  x.fillStyle=C.neon;x.fillRect(24,70,W-48,64);x.fillStyle=C.bg;x.font=`900 40px ${DISP}`;x.fillText('ANNUARIO UFFICIALE',60,116);x.textAlign='right';x.fillText(A.x,W-60,116);x.textAlign='left';
+  const logo=new Image();logo.src=document.querySelector('.logo').src;try{await logo.decode()}catch(e){}
+  x.save();x.beginPath();x.arc(140,250,80,0,Math.PI*2);x.clip();try{x.drawImage(logo,60,170,160,160)}catch(e){}x.restore();
+  x.save();x.translate(250,240);x.rotate(-0.05);x.font=`64px ${BR}`;x.fillStyle='#000';x.fillText(club(),4,4);x.fillStyle=C.neon;x.fillText(club(),0,0);x.restore();
+  x.font=`700 28px ${BODY}`;x.fillStyle=C.muted;x.fillText(`STAGIONE ${A.x} · ${A.players} GIOCATORI IN CAMPO`,254,300);
+  let y=370;const cw=(W-120-50)/6;[['GIOCATE',A.ms.length],['VINTE',A.v],['PARI',A.n],['PERSE',A.p],['GOL FATTI',A.gf],['SUBITI',A.gs]].forEach(([l,v],i)=>{const bx=60+i*(cw+10);
+    x.fillStyle=C.card;x.strokeStyle=C.line;x.lineWidth=2;x.beginPath();x.roundRect(bx,y,cw,120,12);x.fill();x.stroke();
+    x.textAlign='center';x.fillStyle=i===1?C.neon:C.ink;x.font=`900 60px ${DISP}`;x.fillText(String(v),bx+cw/2,y+70);x.font=`700 18px ${BODY}`;x.fillStyle=C.muted;x.fillText(l,bx+cw/2,y+102);x.textAlign='left'});
+  y+=180;x.font=`900 44px ${DISP}`;x.fillStyle=C.gold;x.fillText('I PREMI',60,y);y+=24;
+  A.aw.forEach(([t,,,w,f,cls])=>{y+=58;x.fillStyle=C.line;x.fillRect(60,y+16,W-120,1);x.font=`600 26px ${BODY}`;x.fillStyle=cls==='anti'?C.sweat:C.muted;x.fillText(t.toUpperCase(),60,y);
+    x.font=`800 34px ${DISP}`;x.fillStyle=C.ink;x.fillText(ellip(x,S.players[w.s.id].nome.toUpperCase(),380),430,y);x.textAlign='right';x.fillStyle=C.neon;x.fillText(f(w.v),W-60,y);x.textAlign='left'});
+  y+=80;
+  const lines=[];if(A.bestW)lines.push(['Vittoria più larga',`${goals(A.bestW)}–${+A.bestW.golLoro||0} vs ${A.bestW.avversario}`]);if(A.worstL)lines.push(['Sconfitta più pesante',`${goals(A.worstL)}–${+A.worstL.golLoro||0} vs ${A.worstL.avversario}`]);
+  A.tr.forEach(t=>lines.push(['Trofeo',`${posTxt(t.posizione)} posto · ${t.torneo}`]));
+  if(lines.length){x.font=`900 44px ${DISP}`;x.fillStyle=C.gold;x.fillText('DA RICORDARE',60,y);y+=24;
+    lines.forEach(([l,v])=>{y+=54;x.font=`600 26px ${BODY}`;x.fillStyle=C.muted;x.fillText(l.toUpperCase(),60,y);x.font=`700 30px ${BODY}`;x.fillStyle=C.ink;x.fillText(ellip(x,v,560),430,y)});y+=70}
+  if(A.speech){x.font=`900 44px ${DISP}`;x.fillStyle=C.gold;x.fillText('IL DISCORSO DEL PRESIDENTE',60,y);y+=56;x.font=`italic 400 30px ${BODY}`;x.fillStyle=C.ink;
+    wrapN(x,A.speech.replace(/\s*\n+\s*/g,' '),W-120,14).forEach(l=>{x.fillText(l,60,y);y+=42});if(S.info.presidente){y+=10;x.font=`40px ${BR}`;x.fillStyle=C.neon;x.textAlign='right';x.fillText(S.info.presidente,W-60,y);x.textAlign='left';y+=20}}
+  H=Math.max(1350,Math.ceil(y+180));const fin=document.createElement('canvas');fin.width=W;fin.height=H;const f=fin.getContext('2d');f.drawImage(c,0,0);
+  f.fillStyle=C.bg;f.fillRect(30,H-150,W-60,120);f.fillStyle=C.line;f.fillRect(60,H-120,W-120,2);
+  f.font=`600 24px ${BODY}`;f.fillStyle=C.muted;f.fillText((club()+' · Calcio a 5 · Est. 2026').toUpperCase(),60,H-66);f.textAlign='right';f.fillStyle=C.neon;f.fillText(location.host,W-60,H-66);
+  f.strokeStyle=C.neon;f.lineWidth=6;f.strokeRect(24,24,W-48,H-48);
+  return new Promise(res=>fin.toBlob(res,'image/png'));
+}
+async function shareAnnuario(btn){
+  if(S.season==='sempre')return;btn.disabled=true;const t=btn.textContent;btn.textContent='Preparo…';
+  try{const A=annData(S.season);const blob=await drawAnnuario(A);sharePreview(blob,`annuario-${seasonKey(S.season)}.png`,'Annuario '+club()+' '+S.season)}
+  catch(e){toast('Non sono riuscito a creare l\'immagine')}finally{btn.disabled=false;btn.textContent=t}
+}
 function render(){
-  const st=stats();renderHero();renderMatches();renderAlbum(st);renderStandings(st);renderAwards(st);renderMarket();renderPress();renderPagellino();renderTrophies();
+  const st=stats();renderHero();renderMatches();renderAlbum(st);renderStandings(st);renderAwards(st);renderMarket();renderPress();renderPagellino();renderTrophies();renderAnnuario();
   $('presBar').hidden=!S.isOwner;$('loginBtn').hidden=S.isOwner;$('fab').hidden=!S.isOwner;
   if(sheetState.refresh)sheetState.refresh();
 }
 
 /* ---------- TABS ---------- */
-const TABS=['partite','pagellino','figurine','classifiche','premi','trofei','mercato','stampa'];
-const MORE=['classifiche','premi','trofei','stampa'];
+const TABS=['partite','pagellino','figurine','classifiche','premi','trofei','mercato','stampa','annuario'];
+const MORE=['classifiche','premi','trofei','stampa','annuario'];
 function showTab(t){if(!TABS.includes(t))t='partite';S.tab=t;
   document.querySelectorAll('[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==t);
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
@@ -1076,13 +1239,13 @@ function pollBlock(m){
     ${S.isOwner?`<div><button class="btn small" data-act="toggle-poll" data-id="${m.id}">${m.sondaggioChiuso?'Riapri il sondaggio':'Chiudi il sondaggio'}</button></div>`:''}</div>`;
 }
 function matchDetail(id){
-  const m=S.matches.find(x=>x.id===id);if(!m){closeSheet();return}
+  const m=S.allMatches.find(x=>x.id===id);if(!m){closeSheet();return}
   const keep={mvp:($('v_mvp')||{}).value,bo:($('v_bo')||{}).value};
   const rows=Object.entries(m.pagelle||{}).map(([gid,p])=>({gid,...p,num:+(S.players[gid]||{}).numero||99})).sort((a,b)=>a.num-b.num);
   const scor=rows.filter(r=>+r.gol>0).map(r=>`<span>${esc(pname(r.gid))}${+r.gol>1?' ×'+r.gol:''}</span>`);
   if(+m.autoreti>0)scor.push(`<span>Autorete avversaria${+m.autoreti>1?' ×'+m.autoreti:''}</span>`);
   const ass=rows.filter(r=>+r.assist>0).map(r=>`<span>${esc(pname(r.gid))}${+r.assist>1?' ×'+r.assist:''}</span>`);
-  const conf=S.confs.find(c=>c.partitaId===m.id);
+  const conf=S.allConfs.find(c=>c.partitaId===m.id);
   const h=`<div class="board"><small>${esc(compLabel(m))}</small>
     <div class="teams"><div>${esc(club())}</div><div class="sc">${m.giocata?goals(m)+' – '+(+m.golLoro||0):'vs'}</div><div>${esc(m.avversario)}</div></div>
     <small>${esc(fmtD(m.data,{weekday:'long',day:'numeric',month:'long',year:'numeric'}))}${m.ora?' · '+esc(m.ora):''}${m.luogo?' · '+esc(m.luogo):''}</small></div>
@@ -1103,10 +1266,13 @@ function matchDetail(id){
 }
 function playerDetail(id){
   const p=S.players[id];if(!p){closeSheet();return}
-  const s=stats()[id];const hist=playedSorted().filter(m=>m.pagelle&&m.pagelle[id]);
+  const s=stats()[id];const c=stats(S.allMatches)[id];const hist=playedSorted().filter(m=>m.pagelle&&m.pagelle[id]);
   const h=`<div style="display:flex;gap:14px;align-items:flex-start">${p.foto?`<img class="ph-prev" src="${esc(p.foto)}" alt="">`:''}<div><div class="eyebrow" style="color:var(--neon)">${esc(p.ruolo||'')}${p.numero?' · numero '+esc(p.numero):''}</div>
     ${p.soprannome?`<div class="brush" style="font-size:1.2rem">${esc(p.soprannome)}</div>`:''}${p.motto?`<p style="margin:8px 0 0">${esc(p.motto)}</p>`:''}</div></div>
+  ${p.ritirato?'<div class="pgl-tag" style="align-self:flex-start">Ritirato</div>':''}
+  <div class="eyebrow">${esc(seasonLabel(S.season))}</div>
   <div class="statgrid"><div><b>${s.pres}</b><span>Presenze</span></div><div><b>${s.gol}</b><span>Gol</span></div><div><b>${s.assist}</b><span>Assist</span></div><div><b>${fmtV(s.media==null?null:s.media.toFixed(2))}</b><span>Media</span></div><div><b>${s.mvp}</b><span>MVP</span></div><div><b>${s.bomb}</b><span>Bombole</span></div><div><b>${s.popMvp}</b><span>Voti MVP</span></div><div><b>${s.popBo}</b><span>Voti Bombola</span></div></div>
+  ${S.season!=='sempre'?`<div class="career"><span class="eyebrow">In carriera</span><b>${c.pres}</b> pres · <b>${c.gol}</b> gol · <b>${c.assist}</b> assist · media <b>${fmtV(c.media==null?null:c.media.toFixed(2))}</b> · <b>${c.mvp}</b> MVP</div>`:''}
   ${hist.length?`<div><div class="eyebrow" style="margin-bottom:6px">Partita per partita</div><div class="rowlist">${hist.map(m=>{const r=m.pagelle[id];const has=r.voto!==''&&r.voto!=null;const d=pd(m.data);
     const tags=[m.mvp===id?'<span class="pgl-tag mvp">MVP</span>':'',m.bombola===id?'<span class="pgl-tag bo">Bombola</span>':'',+r.gol?`<span class="pgl-tag">${r.gol} gol</span>`:'',+r.assist?`<span class="pgl-tag">${r.assist} ass.</span>`:''].join('');
     return `<div class="pgl-row" data-act="open-match" data-id="${m.id}"><span class="dcol"><b>${d?d.getDate():''}</b><span>${d?d.toLocaleDateString('it-IT',{month:'short'}):''}</span></span><div style="min-width:0"><div class="pgl-name" style="font-size:1.05rem">${esc(m.avversario)} <span style="color:var(--muted)">${goals(m)}–${+m.golLoro||0}</span> ${tags}</div>${r.nota?`<div class="pgl-nota">${esc(r.nota)}</div>`:''}</div><span class="pgl-v ${has?vcls(+r.voto):'sv'}">${has?fmtV(+r.voto):'s.v.'}</span></div>`}).join('')}</div></div>`:'<div class="empty">Ancora nessuna presenza a referto.</div>'}
@@ -1122,9 +1288,9 @@ const aiRow=(act,label,hint)=>S.sample?`<div class="full ai-row"><button type="b
 const formEnd=(del,save)=>`<div class="actions full">${del}<div class="right"><button type="button" class="btn" data-act="close">Annulla</button><button class="btn primary" type="submit">${save}</button></div></div>`;
 
 function matchForm(id){
-  const m=id?S.matches.find(x=>x.id===id):{tipo:'amichevole',data:today(),giocata:true,pagelle:{}};
+  const m=id?S.allMatches.find(x=>x.id===id):{tipo:'amichevole',data:today(),giocata:true,pagelle:{}};
   if(id&&!m){closeSheet();return}
-  const ps=rosterSorted();const pg=m.pagelle||{};
+  const pg=m.pagelle||{};const ps=rosterSorted().filter(p=>!p.ritirato||pg[p.id]);
   const h=`<form class="form" id="fMatch">
     <div class="field"><label for="m_avv">Avversario</label><input id="m_avv" required value="${esc(m.avversario||'')}" placeholder="Es. Atletico Ma Non Troppo"></div>
     <div class="field"><label for="m_tipo">Tipo</label><select id="m_tipo">${opt('amichevole','Amichevole',m.tipo)}${opt('torneo','Torneo',m.tipo)}</select></div>
@@ -1174,6 +1340,7 @@ function playerForm(id){
     <div class="field"><label for="p_ruolo">Ruolo</label><select id="p_ruolo">${RUOLI.map(r=>opt(r,r,p.ruolo)).join('')}</select></div>
     <div class="field"><label for="p_sopr">Soprannome</label><input id="p_sopr" value="${esc(p.soprannome||'')}" placeholder="Es. Il Mantice"></div>
     <div class="field full"><label for="p_motto">Scheda tecnica (retro della figurina)</label><input id="p_motto" value="${esc(p.motto||'')}" placeholder="Es. Destro educato, fiato da fumatore, rientra solo per la birra"></div>
+    <label class="check full"><input type="checkbox" id="p_rit" ${p.ritirato?'checked':''}> Ritirato: non compare più nella rosa delle nuove stagioni, ma resta nello storico</label>
     <div class="field full"><label for="p_foto">Foto per la figurina</label>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><img class="ph-prev" id="p_prev" alt="" ${p.foto?`src="${esc(p.foto)}"`:'hidden'}>
       <div style="display:flex;flex-direction:column;gap:6px"><input id="p_foto" type="file" accept="image/*"><button type="button" class="btn small" data-act="rm-photo" ${p.foto?'':'hidden'} id="p_rm">Togli foto</button></div></div></div>
@@ -1187,7 +1354,7 @@ async function shrinkPhoto(file){
     return c.toDataURL('image/jpeg',.8)}finally{URL.revokeObjectURL(url)}
 }
 function newsForm(id){
-  const n=id?S.news.find(x=>x.id===id):{data:today()};
+  const n=id?S.allNews.find(x=>x.id===id):{data:today()};
   const h=`<form class="form" id="fNews">
     <div class="field full"><label for="n_tit">Titolo</label><input id="n_tit" required value="${esc(n.titolo||'')}" placeholder="Es. La Presidenza smentisce le voci di mercato"></div>
     <div class="field"><label for="n_data">Data</label><input id="n_data" type="date" value="${esc(n.data||today())}"></div>
@@ -1197,7 +1364,7 @@ function newsForm(id){
   openSheet(id?'Modifica comunicato':'Nuovo comunicato',h);$('fNews').dataset.id=id||'';
 }
 function dealForm(id){
-  const d=id?S.deals.find(x=>x.id===id):{data:today(),tipo:'',stato:''};
+  const d=id?S.allDeals.find(x=>x.id===id):{data:today(),tipo:'',stato:''};
   const h=`<form class="form" id="fDeal">
     <div class="field"><label for="d_gioc">Giocatore</label><input id="d_gioc" required value="${esc(d.giocatore||'')}" placeholder="Es. Kevin «Il Polmone» Esposito"></div>
     <div class="field"><label for="d_tipo">Operazione</label><select id="d_tipo">${opt('','Da decidere',d.tipo)}${TIPI_M.map(t=>opt(t,t,d.tipo)).join('')}</select></div>
@@ -1220,7 +1387,7 @@ function qaRow(q,i){return `<div class="qarow" data-qa="${i}">
   <div class="full"><button type="button" class="btn small danger" data-act="rm-qa">Togli domanda</button></div></div>`}
 let qaN=0;
 function confForm(id,matchId){
-  const c=id?S.confs.find(x=>x.id===id):{data:today(),partitaId:matchId||'',titolo:'',domande:[]};
+  const c=id?S.allConfs.find(x=>x.id===id):{data:today(),partitaId:matchId||'',titolo:'',domande:[]};
   const ms=playedSorted();const qs=c.domande&&c.domande.length?c.domande:[{}];qaN=qs.length;
   const h=`<form class="form" id="fConf">
     <div class="field full"><label for="c_tit">Titolo</label><input id="c_tit" required value="${esc(c.titolo||'')}" placeholder="Es. Il Presidente: «Il fiato non si compra»"></div>
@@ -1239,7 +1406,6 @@ function clubForm(){
   const h=`<form class="form" id="fClub">
     <div class="field"><label for="k_nome">Nome squadra</label><input id="k_nome" value="${esc(i.nome||'Senza Fiato')}"></div>
     <div class="field"><label for="k_pres">Presidente</label><input id="k_pres" value="${esc(i.presidente||'')}" placeholder="Il tuo nome"></div>
-    <div class="field"><label for="k_stag">Stagione</label><input id="k_stag" value="${esc(i.stagione||'2026/27')}"></div>
     <div class="field full"><label for="k_motto">Motto</label><input id="k_motto" value="${esc(i.motto||'')}" placeholder="Corriamo poco, ma col cuore. Il resto lo fa la bombola."></div>
     ${formEnd('','Salva')}</form>`;
   openSheet('Dati della società',h);
@@ -1268,7 +1434,7 @@ function storedVoteCode(){try{return localStorage.getItem('sf-vcode')||''}catch(
 async function load(){
   try{const d=await api('/api/data'+(S.uid?'?voter='+encodeURIComponent(S.uid):''));
     S.info=d.club||{};S.players={};(d.giocatori||[]).forEach(p=>S.players[p.id]=p);
-    S.matches=d.partite||[];S.news=d.comunicati||[];S.confs=d.conferenze||[];S.deals=d.mercato||[];S.trophies=d.trofei||[];S.ballots=d.sondaggi||[];S.mine=d.mine||null;S.voteCode=!!d.codiceSpogliatoio;
+    S.allMatches=d.partite||[];S.allNews=d.comunicati||[];S.allConfs=d.conferenze||[];S.allDeals=d.mercato||[];S.allTrophies=d.trofei||[];S.annuari=d.annuari||[];applySeason();S.ballots=d.sondaggi||[];S.mine=d.mine||null;S.voteCode=!!d.codiceSpogliatoio;
     $('noData').hidden=true;render()}
   catch(e){$('noData').hidden=false}
 }
@@ -1299,19 +1465,20 @@ document.addEventListener('submit',async e=>{
   const save=async(c,data,msg)=>{const ref=id?col(c).doc(id):col(c).doc();ok=await write(()=>ref.set(data),msg);return ref};
   if(f.id==='fMatch'){const d=readMatch();if(!d.avversario||!d.data){toast('Servono avversario e data');btn.disabled=false;return}
     const ref=await save('partite',d,'Partita salvata');if(ok){closeSheet();setTimeout(()=>{if(S.matches.find(m=>m.id===ref.id))matchDetail(ref.id)},300);return}}
-  else if(f.id==='fPlayer'){const d={nome:$('p_nome').value.trim(),numero:$('p_num').value,ruolo:$('p_ruolo').value,soprannome:$('p_sopr').value.trim(),motto:$('p_motto').value.trim(),foto:pendingPhoto||''};
+  else if(f.id==='fPlayer'){const d={nome:$('p_nome').value.trim(),numero:$('p_num').value,ruolo:$('p_ruolo').value,soprannome:$('p_sopr').value.trim(),motto:$('p_motto').value.trim(),foto:pendingPhoto||'',ritirato:$('p_rit').checked};
     if(!d.nome){toast('Serve il nome');btn.disabled=false;return}await save('giocatori',d,id?'Giocatore aggiornato':'Nuovo tesserato: figurina stampata')}
   else if(f.id==='fNews')await save('comunicati',{titolo:$('n_tit').value.trim(),data:$('n_data').value||today(),firma:$('n_firma').value.trim(),testo:$('n_testo').value.trim()},'Comunicato pubblicato');
   else if(f.id==='fDeal'){if(!$('d_gioc').value.trim()){toast('Serve il nome del giocatore');btn.disabled=false;return}
     await save('mercato',{giocatore:$('d_gioc').value.trim(),tipo:$('d_tipo').value||'Acquisto',da:$('d_da').value.trim(),a:$('d_a').value.trim(),cifra:$('d_cifra').value.trim(),stato:$('d_stato').value||'Voci',fonte:$('d_fonte').value.trim(),data:$('d_data').value||today(),testo:$('d_testo').value.trim()},'Voce di mercato pubblicata')}
   else if(f.id==='fTrophy'){const name=trophyName(),pos=parseInt($('t_pos').value,10);
     if(!name||!(pos>=1)){toast('Servono torneo e posizione');btn.disabled=false;return}
-    if(S.trophies.some(t=>t.torneo===name&&t.id!==id)){toast('Questo torneo è già in bacheca: modifica quel trofeo');btn.disabled=false;return}
+    if(S.allTrophies.some(t=>t.torneo===name&&t.id!==id)){toast('Questo torneo è già in bacheca: modifica quel trofeo');btn.disabled=false;return}
     await save('trofei',{torneo:name,posizione:pos,partecipanti:parseInt($('t_part').value,10)||'',data:$('t_data').value||today(),nota:$('t_nota').value.trim()},pos<=3?'Coppa in bacheca!':'Medaglia in bacheca')}
   else if(f.id==='fConf'){const qs=readQA();if(!qs.length){toast('Serve almeno una domanda');btn.disabled=false;return}
     await save('conferenze',{titolo:$('c_tit').value.trim()||'Conferenza stampa',partitaId:$('c_match').value,data:$('c_data').value||today(),domande:qs},'Conferenza pubblicata')}
   else if(f.id==='fLogin'){if(await tryLogin($('l_code').value.trim())){closeSheet();toast('Benvenuto, Presidente')}else btn.disabled=false;return}
-  else if(f.id==='fClub')ok=await write(()=>S.db.doc('club/info').set({nome:$('k_nome').value.trim()||'Senza Fiato',presidente:$('k_pres').value.trim(),stagione:$('k_stag').value.trim()||'2026/27',motto:$('k_motto').value.trim()}),'Dati società salvati');
+  else if(f.id==='fSpeech'){const k=f.dataset.season;ok=await write(()=>S.db.doc('annuari/'+seasonKey(k)).set({stagione:k,discorso:$('a_txt').value.trim()}),'Discorso salvato');if(ok){closeSheet();showTab('annuario')}else if(btn)btn.disabled=false;return}
+  else if(f.id==='fClub')ok=await write(()=>S.db.doc('club/info').set({nome:$('k_nome').value.trim()||'Senza Fiato',presidente:$('k_pres').value.trim(),motto:$('k_motto').value.trim()}),'Dati società salvati');
   if(ok)closeSheet();else if(btn)btn.disabled=false;
 });
 function arm(b){if(b.classList.contains('armed'))return true;b.classList.add('armed');const t=b.textContent;b.textContent='Tocca ancora per confermare';clearTimeout(b._t);b._t=setTimeout(()=>{b.classList.remove('armed');b.textContent=t},3500);return false}
@@ -1368,16 +1535,17 @@ Rispondi solo con un oggetto JSON che contiene esattamente le chiavi mancanti: {
       if(el.tagName==='SELECT'){const list=i==='d_tipo'?TIPI_M:STATI_M;const hit=list.find(t=>t.toLowerCase()===String(v).toLowerCase());if(hit){el.value=hit;n++}}
       else if(!el.value.trim()){el.value=String(v);n++}}
     setTimeout(()=>{$('aiMsg').textContent=n?`Completati ${n} campi, i tuoi dati sono rimasti com'erano.`:'Nessun campo completato, riprova.'})})}
-function aiConf(){const m=S.matches.find(x=>x.id===$('c_match').value);const tema=$('c_tema').value.trim();
+function aiConf(){const m=S.allMatches.find(x=>x.id===$('c_match').value);const tema=$('c_tema').value.trim();
   ai(`Scrivi la conferenza stampa del Presidente. ${CTX()}\nIl Presidente parla come un presidente di Serie A sopra le righe: frasi fatte, vittimismo sull'arbitro, proclami, promesse di mercato impossibili, difesa a oltranza dei suoi. 4 o 5 domande di giornalisti inventati con testate inventate (nomi buffi), risposte di 30-60 parole.\n${m?'Si parla di questa partita:\n'+matchFacts(m):'Conferenza libera, senza una partita specifica.'}\n${tema?'Il Presidente vuole assolutamente dire: '+tema:''}\nRispondi solo con un oggetto JSON: {"titolo": "titolo da giornale con una citazione del Presidente, max 12 parole", "domande": [{"giornalista": "nome", "testata": "nome", "domanda": "testo", "risposta": "testo"}]}`,
   r=>{if(r.titolo)$('c_tit').value=String(r.titolo);if(Array.isArray(r.domande)&&r.domande.length){qaN=r.domande.length;$('qaList').innerHTML=r.domande.map((q,i)=>qaRow({giornalista:String(q.giornalista||''),testata:String(q.testata||''),domanda:String(q.domanda||''),risposta:String(q.risposta||'')},i)).join('')}})}
 
 /* ---------- EVENTS ---------- */
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-tab],[data-act],[data-sort],[data-f]');if(!t)return;
+  const t=e.target.closest('[data-tab],[data-act],[data-sort],[data-f],[data-season]');if(!t)return;
   if(t.dataset.tab){const inSheet=!!t.closest('#sheet');showTab(t.dataset.tab);if(inSheet)closeSheet();
     const mob=matchMedia('(max-width:760px)').matches;window.scrollTo({top:mob?document.querySelector('main').offsetTop-8:document.querySelector('.tabs').offsetTop,behavior:'instant'});return}
   if(t.dataset.sort){S.sort={k:t.dataset.sort,d:-1};renderStandings(stats());return}
+  if(t.dataset.season){S.season=t.dataset.season;applySeason();const go=t.dataset.goto;closeSheet();render();if(go)showTab(go);window.scrollTo({top:0,behavior:'instant'});toast(seasonLabel(S.season));return}
   if(t.dataset.f){S.filter=t.dataset.f;document.querySelectorAll('#matchFilter .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===t)));renderMatches();return}
   const a=t.dataset.act,id=t.dataset.id;
   if(a==='flip'){if(e.target.closest('.open'))return;t.classList.toggle('flip');flipped.has(id)?flipped.delete(id):flipped.add(id);return}
@@ -1404,7 +1572,7 @@ document.addEventListener('click',async e=>{
     case 'add-qa':$('qaList').insertAdjacentHTML('beforeend',qaRow({},qaN++));break;
     case 'rm-qa':t.closest('.qarow').remove();break;
     case 'rm-photo':pendingPhoto='';$('p_prev').hidden=true;$('p_rm').hidden=true;$('p_foto').value='';break;
-    case 'toggle-poll':{const m=S.matches.find(x=>x.id===id);if(m)write(()=>col('partite').doc(id).update({sondaggioChiuso:!m.sondaggioChiuso}),m.sondaggioChiuso?'Sondaggio riaperto':'Sondaggio chiuso');break}
+    case 'toggle-poll':{const m=S.allMatches.find(x=>x.id===id);if(m)write(()=>col('partite').doc(id).update({sondaggioChiuso:!m.sondaggioChiuso}),m.sondaggioChiuso?'Sondaggio riaperto':'Sondaggio chiuso');break}
     case 'vote':{if(!S.uid)return;const mv=$('v_mvp').value,bo=$('v_bo').value;if(!mv&&!bo){toast('Scegli almeno un nome');return}
       const vc=$('v_code')?$('v_code').value.trim():'';if(S.voteCode&&!vc){toast('Serve il codice spogliatoio');return}
       t.disabled=true;try{await api('/api/vote',{voter:S.uid,matchId:id,mvp:mv,bombola:bo,codice:vc});try{if(vc)localStorage.setItem('sf-vcode',vc)}catch(e){}toast('Voto registrato');await load()}
@@ -1412,6 +1580,12 @@ document.addEventListener('click',async e=>{
     case 'login':loginForm();break;
     case 'more':moreSheet();break;
     case 'pres-menu':presSheet();break;
+    case 'season':seasonSheet();break;
+    case 'backup':backup();break;
+    case 'new-annuario':speechForm(S.season==='sempre'?prevSeason():S.season);break;
+    case 'edit-speech':speechForm(id);break;
+    case 'ai-speech':aiSpeech();break;
+    case 'share-ann':shareAnnuario(t);break;
     case 'logout':S.code='';S.isOwner=false;S.sample=null;try{localStorage.removeItem('sf-code')}catch(e){}closeSheet();render();toast('Uscito dall\'Area Presidenza');break;
     default:if(a&&a.startsWith('del-')){if(!arm(t))return;const c={'del-match':'partite','del-player':'giocatori','del-news':'comunicati','del-deal':'mercato','del-conf':'conferenze','del-trophy':'trofei'}[a];
       if(await write(()=>col(c).doc(id).delete(),'Eliminato'))closeSheet()}
@@ -1444,7 +1618,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('sheet').hidden)
 
 /* ---------- BOOT ---------- */
 let initTab=(location.hash||'').slice(1);if(!TABS.includes(initTab)){try{initTab=localStorage.getItem('sf-tab')||'partite'}catch(e){initTab='partite'}}
-showTab(initTab);render();
+S.season=curSeason();showTab(initTab);render();
 (async()=>{
   try{S.uid=localStorage.getItem('sf-voter');if(!S.uid){S.uid=rid()+rid();localStorage.setItem('sf-voter',S.uid)}}catch(e){S.uid=null}
   S.dl={save:async({filename,data})=>{const u=URL.createObjectURL(data);const a=document.createElement('a');a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}};
