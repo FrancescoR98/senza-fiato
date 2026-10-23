@@ -515,6 +515,14 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
   .albo{grid-template-columns:minmax(0,1fr)}
   .ann-season{font-size:2.2rem}
 }
+
+/* premi per torneo */
+.tour-head{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.tour-head>div{min-width:0}
+.tour-head b{display:block;font-family:var(--f-display);font-weight:900;font-size:1.45rem;text-transform:uppercase;line-height:1.05;overflow-wrap:anywhere}
+.tour-head span{font-size:.82rem;color:var(--muted)}
+.tour-cup{flex:none;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--gold);font-weight:700;font-size:.72rem}
+.tour-cup svg{width:52px;height:62px}
 </style>
 </head>
 <body>
@@ -598,7 +606,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
   </section>
 
   <section data-sec="premi" hidden>
-    <div class="sec-head"><h2>Premi stagionali</h2><span class="eyebrow">Aggiornati dopo ogni partita</span></div>
+    <div class="sec-head"><h2>Premi</h2><span class="eyebrow">Per stagione e per torneo, aggiornati dopo ogni partita</span></div>
     <div id="awards"></div>
   </section>
 
@@ -644,7 +652,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 
 <script>
 (function(){
-const S={info:{},players:{},allMatches:[],allNews:[],allConfs:[],allDeals:[],allTrophies:[],annuari:[],season:'',matches:[],news:[],confs:[],deals:[],trophies:[],ballots:[],dl:null,pglId:'',isOwner:false,uid:null,db:null,sample:null,filter:'tutte',sort:{k:'gol',d:-1}};
+const S={awScope:'',info:{},players:{},allMatches:[],allNews:[],allConfs:[],allDeals:[],allTrophies:[],annuari:[],season:'',matches:[],news:[],confs:[],deals:[],trophies:[],ballots:[],dl:null,pglId:'',isOwner:false,uid:null,db:null,sample:null,filter:'tutte',sort:{k:'gol',d:-1}};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RUOLI=['Portiere','Difensore','Centrocampista','Attaccante','Tuttocampista','Panchinaro di lusso'];
@@ -782,11 +790,23 @@ function awardList(st,nPlayed){
   ];
 }
 function seasonMatches(x){return S.allMatches.filter(m=>seasonOf(m.data)===x)}
+const tName=m=>(m.competizione||'').trim();
+function tournamentMatches(name){return S.allMatches.filter(m=>m.tipo==='torneo'&&tName(m)===name)}
+function seasonTournaments(){const seen=new Map();S.matches.filter(m=>m.tipo==='torneo'&&tName(m)).forEach(m=>{const n=tName(m);if(!seen.has(n)||m.data<seen.get(n))seen.set(n,m.data||'')});return [...seen.entries()].sort((a,b)=>b[1].localeCompare(a[1])).map(e=>e[0])}
+function awardCards(A,ctx){return '<div class="awards">'+A.map(([t,why,m,w,f,cls])=>`<div class="aw ${cls||''}"><div class="medal">${m}</div><h3>${t}</h3><div class="why">${why.replace('della stagione',ctx)}</div>
+    <div class="who">${w?`<b>${esc(S.players[w.s.id].nome)}</b><span>${f(w.v)}</span>`:'<b style="color:var(--muted);font-weight:500">Ancora nessuno</b><span></span>'}</div></div>`).join('')+'</div>'}
 function renderAwards(st){
+  const ts=seasonTournaments();if(S.awScope&&!ts.includes(S.awScope))S.awScope='';
+  let h=ts.length?`<div class="lb-chips"><button class="chip" data-awscope="" aria-pressed="${!S.awScope}">${S.season==='sempre'?'Di sempre':'Stagione'}</button>${ts.map(n=>`<button class="chip" data-awscope="${esc(n)}" aria-pressed="${S.awScope===n}">${esc(n)}</button>`).join('')}</div>`:'';
+  if(S.awScope){
+    const ms=tournamentMatches(S.awScope);const pl=ms.filter(m=>m.giocata);const tr=S.allTrophies.find(t=>t.torneo===S.awScope);
+    let v=0,n=0,p=0;pl.forEach(m=>{const r=result(m);if(r==='V')v++;else if(r==='N')n++;else p++});
+    h+=`<div class="tour-head"><div><div class="eyebrow">Premi del torneo</div><b>${esc(S.awScope)}</b><span>${pl.length} ${pl.length===1?'partita giocata':'partite giocate'}${pl.length?` · ${v}V ${n}N ${p}P`:''}${pl.length<ms.length?' · torneo in corso':''}</span></div>${tr?`<button class="tour-cup" data-act="open-trophy" data-id="${tr.id}">${trophySvg(tr.posizione)}<span>${posTxt(tr.posizione)} posto</span></button>`:''}</div>`;
+    h+=pl.length?awardCards(awardList(stats(ms),pl.length),'del torneo'):`<div class="empty"><b>Torneo appena iniziato</b>I premi arrivano con le pagelle della prima partita.</div>`;
+    $('awards').innerHTML=h;return}
   const A=awardList(st,playedSorted().length);
-  let h=`<div class="subhead" style="margin-top:0">${S.season==='sempre'?'Premi di sempre':S.season===curSeason()?'Premi della stagione in corso':'Premi '+S.season}</div>`;
-  h+='<div class="awards">'+A.map(([t,why,m,w,f,cls])=>`<div class="aw ${cls||''}"><div class="medal">${m}</div><h3>${t}</h3><div class="why">${S.season==='sempre'?why.replace('della stagione','di sempre'):why}</div>
-    <div class="who">${w?`<b>${esc(S.players[w.s.id].nome)}</b><span>${f(w.v)}</span>`:'<b style="color:var(--muted);font-weight:500">Ancora nessuno</b><span></span>'}</div></div>`).join('')+'</div>';
+  h+=`<div class="subhead" style="margin-top:0">${S.season==='sempre'?'Premi di sempre':S.season===curSeason()?'Premi della stagione in corso':'Premi '+S.season}</div>`;
+  h+=awardCards(A,S.season==='sempre'?'di sempre':'della stagione');
   const done=allSeasons().filter(x=>x<curSeason()&&seasonMatches(x).some(m=>m.giocata));
   h+=`<div class="subhead">Albo d'oro</div>`;
   if(!done.length)h+=`<div class="empty">L'Albo d'oro si riempie da solo: il 31 luglio i vincitori della stagione entrano qui per sempre.</div>`;
@@ -1016,6 +1036,8 @@ function trophyDetail(id){
     ${st.n?`<div class="statgrid"><div><b>${st.n}</b><span>Partite</span></div><div><b>${st.v}</b><span>Vinte</span></div><div><b>${st.nn}</b><span>Pari</span></div><div><b>${st.p}</b><span>Perse</span></div><div><b>${st.gf}</b><span>Gol fatti</span></div><div><b>${st.gs}</b><span>Gol subiti</span></div></div>
       ${st.top?`<div class="hon mvp"><div class="eyebrow">Capocannoniere del torneo</div><b>${esc(pname(st.top.gid))} · ${st.top.gol} gol</b></div>`:''}`:''}
     ${t.nota?`<div class="chron"><div class="eyebrow">Dalla Presidenza</div><p>${esc(t.nota)}</p></div>`:''}
+    ${(()=>{const ms=tournamentMatches(t.torneo);const pl=ms.filter(m=>m.giocata);if(!pl.length)return '';const L=awardList(stats(ms),pl.length).filter(a=>a[3]);
+      return L.length?`<div><div class="eyebrow" style="margin-bottom:6px">Premi del torneo</div><div class="rowlist albo-list">${L.map(([n,,,w,f,cls])=>`<div class="albo-row ${cls||''}" data-act="open-player" data-id="${w.s.id}"><span>${n}</span><b>${esc(S.players[w.s.id].nome)}</b><i>${f(w.v)}</i></div>`).join('')}</div></div>`:''})()}
     <div class="actions"><button class="btn primary" data-act="share-trophy" data-id="${t.id}">Condividi</button>${S.isOwner?`<button class="btn" data-act="edit-trophy" data-id="${t.id}">Modifica</button>`:''}</div>`,()=>trophyDetail(id));
 }
 function trophyForm(id){
@@ -1541,11 +1563,12 @@ function aiConf(){const m=S.allMatches.find(x=>x.id===$('c_match').value);const 
 
 /* ---------- EVENTS ---------- */
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-tab],[data-act],[data-sort],[data-f],[data-season]');if(!t)return;
+  const t=e.target.closest('[data-tab],[data-act],[data-sort],[data-f],[data-season],[data-awscope]');if(!t)return;
   if(t.dataset.tab){const inSheet=!!t.closest('#sheet');showTab(t.dataset.tab);if(inSheet)closeSheet();
     const mob=matchMedia('(max-width:760px)').matches;window.scrollTo({top:mob?document.querySelector('main').offsetTop-8:document.querySelector('.tabs').offsetTop,behavior:'instant'});return}
   if(t.dataset.sort){S.sort={k:t.dataset.sort,d:-1};renderStandings(stats());return}
   if(t.dataset.season){S.season=t.dataset.season;applySeason();const go=t.dataset.goto;closeSheet();render();if(go)showTab(go);window.scrollTo({top:0,behavior:'instant'});toast(seasonLabel(S.season));return}
+  if(t.dataset.awscope!==undefined){S.awScope=t.dataset.awscope;renderAwards(stats());return}
   if(t.dataset.f){S.filter=t.dataset.f;document.querySelectorAll('#matchFilter .chip').forEach(c=>c.setAttribute('aria-pressed',String(c===t)));renderMatches();return}
   const a=t.dataset.act,id=t.dataset.id;
   if(a==='flip'){if(e.target.closest('.open'))return;t.classList.toggle('flip');flipped.has(id)?flipped.delete(id):flipped.add(id);return}
