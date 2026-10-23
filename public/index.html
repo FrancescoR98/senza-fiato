@@ -198,6 +198,29 @@ tbody tr[data-act]:hover td{background:var(--surface-2)}
 .qa .a{margin-top:2px}
 .qa .a b{color:var(--neon)}
 
+/* TROFEI */
+.vetrina{border:1px solid var(--line);border-radius:18px;padding:28px 22px 10px;background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(255,210,74,.10),transparent 70%),linear-gradient(180deg,var(--surface),var(--bg))}
+.cabinet{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:34px 18px}
+.tr{display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;border:0;background:none;padding:0;min-width:0;width:100%}
+.tr-icon{height:130px;width:110px;display:flex;align-items:flex-end;justify-content:center}
+.tr-icon svg{width:100%;height:100%;filter:drop-shadow(0 6px 14px rgba(255,210,74,.22))}
+.tr.Medaglia .tr-icon svg{filter:drop-shadow(0 6px 14px rgba(133,248,67,.18))}
+.tr:hover .tr-icon svg{transform:translateY(-3px)}
+.tr-shelf{width:100%;height:10px;border-radius:3px;background:linear-gradient(180deg,#2a4566,#13243a);box-shadow:0 8px 14px rgba(0,0,0,.45)}
+.tr-plate{margin-top:12px;background:linear-gradient(180deg,#d9b65a,#a9822c);color:#1d1404;border-radius:4px;padding:6px 10px;max-width:100%;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.tr.Argento .tr-plate{background:linear-gradient(180deg,#e3e9ef,#9aa6b2)}
+.tr.Bronzo .tr-plate{background:linear-gradient(180deg,#e7a06c,#9a5a2c)}
+.tr.Medaglia .tr-plate{background:linear-gradient(180deg,#1c3350,#0d1a2a);color:var(--neon);box-shadow:inset 0 0 0 1px var(--neon-dim)}
+.tr-plate b{display:block;font-family:var(--f-display);font-weight:900;font-size:1.05rem;text-transform:uppercase;line-height:1.05;overflow-wrap:anywhere}
+.tr-who{margin-top:6px;font-weight:600;font-size:.92rem}
+.tr-date{font-size:.75rem;color:var(--muted)}
+.tr-cat{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--neon);margin-top:2px}
+.trophy-hero{display:grid;grid-template-columns:140px 1fr;gap:18px;align-items:center}
+.trophy-hero .tr-icon{width:140px;height:160px}
+.trophy-hero h3{font-family:var(--f-display);font-weight:900;font-size:2rem;text-transform:uppercase;line-height:1}
+@media (prefers-reduced-motion:no-preference){.tr-icon svg{transition:transform .2s}}
+@media (max-width:640px){.cabinet{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 12px}.trophy-hero{grid-template-columns:1fr;justify-items:center;text-align:center}}
+
 /* PAGELLINO */
 .pgl-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:16px}
 .pgl-bar .field{flex:1 1 260px;max-width:420px}
@@ -346,6 +369,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
     <button class="tab" role="tab" data-tab="figurine">Figurine</button>
     <button class="tab" role="tab" data-tab="classifiche">Classifiche</button>
     <button class="tab" role="tab" data-tab="premi">Premi</button>
+    <button class="tab" role="tab" data-tab="trofei">Trofei</button>
     <button class="tab" role="tab" data-tab="mercato">Calciomercato</button>
     <button class="tab" role="tab" data-tab="stampa">Sala stampa</button>
   </div>
@@ -359,6 +383,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
     <button class="btn" data-act="new-player">Nuovo giocatore</button>
     <button class="btn" data-act="new-deal">Voce di mercato</button>
     <button class="btn" data-act="new-conf">Conferenza stampa</button>
+    <button class="btn" data-act="new-trophy">Trofeo</button>
     <button class="btn" data-act="new-news">Comunicato</button>
     <button class="btn" data-act="club">Dati società</button>
     <button class="btn small" data-act="logout" style="margin-left:auto">Esci</button>
@@ -399,6 +424,11 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
     <div id="awards"></div>
   </section>
 
+  <section data-sec="trofei" hidden>
+    <div class="sec-head"><h2>Bacheca trofei</h2><span class="eyebrow" id="trophyCount"></span></div>
+    <div id="trophies"></div>
+  </section>
+
   <section data-sec="mercato" hidden>
     <div class="sec-head"><h2>Calciomercato</h2><span class="eyebrow">Indiscrezioni non verificate (e non verificabili)</span></div>
     <div id="market"></div>
@@ -422,7 +452,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 
 <script>
 (function(){
-const S={info:{},players:{},matches:[],news:[],confs:[],deals:[],ballots:[],dl:null,pglId:'',isOwner:false,uid:null,db:null,sample:null,filter:'tutte',sort:{k:'gol',d:-1}};
+const S={info:{},players:{},matches:[],news:[],confs:[],deals:[],trophies:[],ballots:[],dl:null,pglId:'',isOwner:false,uid:null,db:null,sample:null,filter:'tutte',sort:{k:'gol',d:-1}};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RUOLI=['Portiere','Difensore','Centrocampista','Attaccante','Tuttocampista','Panchinaro di lusso'];
@@ -723,14 +753,122 @@ async function shareDeal(id,btn){
     sharePreview(blob,`mercato-${slug}.png`,'Calciomercato · '+d.giocatore)}
   catch(e){toast('Non sono riuscito a creare l\'immagine')}finally{btn.disabled=false;btn.textContent=t}
 }
+/* --- bacheca trofei: un trofeo per ogni torneo --- */
+const MET={1:['#ffe27a','#d4a017','#8a6508'],2:['#f1f5f8','#b8c4cf','#6f7d8a'],3:['#f2b483','#c47436','#7a431a']};
+const posTxt=n=>(+n||0)+'°';
+const tierOf=pos=>pos==1?'Oro':pos==2?'Argento':pos==3?'Bronzo':'Medaglia';
+function trophySvg(pos){
+  pos=+pos||0;const g='g'+Math.random().toString(36).slice(2,8);
+  if(pos>=1&&pos<=3){const [L,M,D]=MET[pos];
+    return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Coppa ${pos}° posto"><defs><linearGradient id="${g}" x1="0" x2="1"><stop offset="0" stop-color="${D}"/><stop offset=".35" stop-color="${L}"/><stop offset=".6" stop-color="${M}"/><stop offset="1" stop-color="${D}"/></linearGradient></defs>
+    <rect x="26" y="108" width="48" height="10" rx="2" fill="#13243a" stroke="${D}" stroke-width="1.5"/><rect x="31" y="100" width="38" height="9" rx="1.5" fill="url(#${g})"/>
+    <rect x="45" y="72" width="10" height="29" fill="url(#${g})"/><path d="M22 8 h56 v20 c0 28-12 46-28 46 S22 56 22 28z" fill="url(#${g})"/>
+    <path d="M22 16 H9 c0 20 9 30 17 32 M78 16 h13 c0 20-9 30-17 32" fill="none" stroke="${M}" stroke-width="6" stroke-linecap="round"/>
+    <path d="M32 16 c0 18 4 32 10 40" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/><rect x="22" y="8" width="56" height="5" fill="${D}" opacity=".35"/>
+    <circle cx="50" cy="36" r="13" fill="${D}" opacity=".85"/><text x="50" y="42.5" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="18" fill="${L}">${pos}</text></svg>`}
+  const big=String(pos).length>1;
+  return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Medaglia ${pos}° posto"><defs><linearGradient id="${g}" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#1c3350"/><stop offset="1" stop-color="#0b1726"/></linearGradient></defs>
+    <path d="M30 4 h14 l10 44 h-14z" fill="#85f843"/><path d="M70 4 h-14 l-10 44 h14z" fill="#8fd8ff"/>
+    <circle cx="50" cy="78" r="34" fill="url(#${g})" stroke="#85f843" stroke-width="4"/><circle cx="50" cy="78" r="26" fill="none" stroke="#85f843" stroke-opacity=".35" stroke-width="1.5"/>
+    <text x="50" y="${big?89:91}" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="${big?28:34}" fill="#85f843">${pos}°</text></svg>`;
+}
+function tornei(){const set=new Set();S.matches.forEach(m=>{if(m.tipo==='torneo'&&m.competizione)set.add(m.competizione.trim())});S.trophies.forEach(t=>t.torneo&&set.add(t.torneo));return [...set].sort()}
+function tStats(name){const ms=S.matches.filter(m=>m.tipo==='torneo'&&(m.competizione||'').trim()===name&&m.giocata);let v=0,n=0,p=0,gf=0,gs=0;const sc={};
+  for(const m of ms){const r=result(m);if(r==='V')v++;else if(r==='N')n++;else p++;gf+=goals(m);gs+=+m.golLoro||0;for(const [g,x] of Object.entries(m.pagelle||{}))if(+x.gol)sc[g]=(sc[g]||0)+(+x.gol)}
+  const top=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];return {n:ms.length,v,nn:n,p,gf,gs,top:top?{gid:top[0],gol:top[1]}:null}}
+function renderTrophies(){
+  const ts=[...S.trophies].filter(t=>t.torneo).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  $('trophyCount').textContent=ts.length?ts.length+(ts.length===1?' torneo in bacheca':' tornei in bacheca'):'';
+  if(!ts.length){$('trophies').innerHTML=`<div class="vetrina"><div class="empty" style="margin-bottom:18px"><b>Vetrina vuota</b>${S.isOwner?'A fine torneo premi «Trofeo» nell\'Area Presidenza, scegli il torneo e la posizione: coppa d\'oro, d\'argento o di bronzo per il podio, medaglia dal 4° posto in giù.':'Qui arrivano le coppe di ogni torneo. Il primo è in corso.'}</div></div>`;return}
+  $('trophies').innerHTML='<div class="vetrina"><div class="cabinet">'+ts.map(t=>`<button class="tr ${tierOf(t.posizione)}" data-act="open-trophy" data-id="${t.id}">
+    <div class="tr-icon">${trophySvg(t.posizione)}</div><div class="tr-shelf"></div>
+    <div class="tr-plate"><b>${posTxt(t.posizione)} posto</b></div><div class="tr-who">${esc(t.torneo)}</div>
+    <div class="tr-date">${esc(fmtD(t.data,{month:'long',year:'numeric'}))}${t.partecipanti?' · '+esc(t.partecipanti)+' squadre':''}</div></button>`).join('')+'</div></div>';
+}
+function trophyDetail(id){
+  const t=S.trophies.find(x=>x.id===id);if(!t){closeSheet();return}const st=tStats(t.torneo);
+  openSheet('Albo dei tornei',`<div class="trophy-hero"><div class="tr-icon">${trophySvg(t.posizione)}</div><div>
+    <div class="eyebrow" style="color:var(--gold)">${t.posizione<=3?'Coppa '+tierOf(t.posizione).toLowerCase():'Medaglia'}${t.partecipanti?' · su '+esc(t.partecipanti)+' squadre':''}</div>
+    <h3>${posTxt(t.posizione)} posto</h3><div style="margin-top:6px;font-weight:600">${esc(t.torneo)}</div>
+    <div class="ai-msg">${esc(fmtD(t.data,{day:'numeric',month:'long',year:'numeric'}))}</div></div></div>
+    ${st.n?`<div class="statgrid"><div><b>${st.n}</b><span>Partite</span></div><div><b>${st.v}</b><span>Vinte</span></div><div><b>${st.nn}</b><span>Pari</span></div><div><b>${st.p}</b><span>Perse</span></div><div><b>${st.gf}</b><span>Gol fatti</span></div><div><b>${st.gs}</b><span>Gol subiti</span></div></div>
+      ${st.top?`<div class="hon mvp"><div class="eyebrow">Capocannoniere del torneo</div><b>${esc(pname(st.top.gid))} · ${st.top.gol} gol</b></div>`:''}`:''}
+    ${t.nota?`<div class="chron"><div class="eyebrow">Dalla Presidenza</div><p>${esc(t.nota)}</p></div>`:''}
+    <div class="actions"><button class="btn primary" data-act="share-trophy" data-id="${t.id}">Condividi</button>${S.isOwner?`<button class="btn" data-act="edit-trophy" data-id="${t.id}">Modifica</button>`:''}</div>`,()=>trophyDetail(id));
+}
+function trophyForm(id){
+  const t=id?S.trophies.find(x=>x.id===id):{data:today(),posizione:''};const ts=tornei();
+  const sel=t.torneo&&ts.includes(t.torneo)?t.torneo:(t.torneo?'__altro':(ts[0]||'__altro'));
+  const h=`<form class="form" id="fTrophy">
+    <div class="field full"><label for="t_tsel">Torneo</label><select id="t_tsel">${ts.map(n=>opt(n,n,sel)).join('')}${opt('__altro','Altro torneo (scrivi il nome)',sel)}</select></div>
+    <div class="field full" id="t_altroF" ${sel==='__altro'?'':'hidden'}><label for="t_altro">Nome del torneo</label><input id="t_altro" value="${esc(sel==='__altro'?t.torneo||'':'')}" placeholder="Es. 2° Christmas Cup"></div>
+    <div class="field"><label for="t_pos">Posizione finale</label><input id="t_pos" type="number" min="1" max="99" required value="${esc(t.posizione||'')}" placeholder="Es. 1"></div>
+    <div class="field"><label for="t_part">Squadre partecipanti (facoltativo)</label><input id="t_part" type="number" min="2" max="200" value="${esc(t.partecipanti||'')}"></div>
+    <div class="field"><label for="t_data">Data di fine torneo</label><input id="t_data" type="date" value="${esc(t.data||today())}"></div>
+    <div class="field" style="justify-content:flex-end"><div class="ai-msg" id="t_hint"></div></div>
+    <div class="field full"><label for="t_nota">Nota della Presidenza (facoltativa)</label><textarea id="t_nota" placeholder="Es. Un torneo giocato col cuore e senza fiato, come da statuto">${esc(t.nota||'')}</textarea></div>
+    ${aiRow('ai-trophy','Scrivi la nota con Claude','Usa posizione e risultati del torneo. Scrive solo se la nota è vuota.')}
+    ${formEnd(delBtn('del-trophy',id),'Metti in bacheca')}</form>`;
+  openSheet(id?'Modifica trofeo':'Nuovo trofeo',h);$('fTrophy').dataset.id=id||'';trophyHint();
+}
+function trophyHint(){const e=$('t_hint');if(!e)return;const p=+$('t_pos').value;e.textContent=!p?'1°, 2° e 3° posto: coppa. Dal 4°: medaglia.':p<=3?'Riceverete la coppa '+tierOf(p).toLowerCase()+'.':'Riceverete la medaglia del '+p+'° posto.'}
+function trophyName(){const v=$('t_tsel').value;return v==='__altro'?$('t_altro').value.trim():v}
+function aiTrophy(){
+  if($('t_nota').value.trim()){$('aiMsg').textContent='La nota è già scritta: svuotala se vuoi che la scriva Claude.';return}
+  const name=trophyName(),pos=+$('t_pos').value;if(!name||!pos){$('aiMsg').textContent='Prima scegli torneo e posizione.';return}
+  const st=tStats(name);const ms=S.matches.filter(m=>m.tipo==='torneo'&&(m.competizione||'').trim()===name&&m.giocata).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  ai(`Sei l'Ufficio Stampa. ${CTX()}
+I ${club()} hanno chiuso il torneo "${name}" al ${pos}° posto${$('t_part').value?' su '+$('t_part').value+' squadre':''}.
+${st.n?`Bilancio: ${st.n} partite, ${st.v} vinte, ${st.nn} pari, ${st.p} perse, ${st.gf} gol fatti e ${st.gs} subiti.${st.top?' Capocannoniere: '+nameOf(st.top.gid)+' con '+st.top.gol+' gol.':''}\nRisultati: ${ms.map(m=>`${m.fase?m.fase+': ':''}${goals(m)}-${+m.golLoro||0} contro ${m.avversario}`).join('; ')}`:'Non ci sono risultati inseriti per questo torneo.'}
+Scrivi la nota ufficiale della Presidenza per la bacheca trofei: 40-70 parole, tono solenne e autoironico, coerente con la posizione (trionfale se primi, orgoglio ferito se lontani dal podio). Usa solo i fatti qui sopra.
+Rispondi solo con un oggetto JSON: {"nota": "..."}`,r=>{if(r.nota&&!$('t_nota').value.trim())$('t_nota').value=String(r.nota)});
+}
+async function drawTrophy(t){
+  const DISP='"Big Shoulders Display", Impact, sans-serif',BODY='Barlow, Arial, sans-serif',BR='"Permanent Marker", cursive';
+  try{await Promise.all(['900 40px "Big Shoulders Display"','40px "Permanent Marker"','600 20px Barlow','italic 400 20px Barlow'].map(f=>document.fonts.load(f)))}catch(e){}
+  const W=1080;let H=2400;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const tone={1:'#ffd24a',2:'#dfe7ee',3:'#e7a06c'}[t.posizione]||'#85f843';
+  const C={bg:'#07111d',neon:'#85f843',ink:'#eef5ea',muted:'#93a7b9',line:'#1f3550'};
+  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+  const gr=x.createRadialGradient(W/2,470,40,W/2,470,520);gr.addColorStop(0,'rgba(255,210,74,.2)');gr.addColorStop(1,'rgba(255,210,74,0)');x.fillStyle=gr;x.fillRect(0,0,W,1000);
+  x.fillStyle=tone;x.fillRect(24,70,W-48,64);x.fillStyle=C.bg;x.font=`900 40px ${DISP}`;x.fillText('ALBO DEI TORNEI',60,116);
+  x.textAlign='right';x.font=`700 26px ${BODY}`;x.fillText(fmtD(t.data,{month:'long',year:'numeric'}).toUpperCase(),W-60,113);x.textAlign='left';
+  const logo=new Image();logo.src=document.querySelector('.logo').src;try{await logo.decode()}catch(e){}
+  x.save();x.beginPath();x.arc(120,220,60,0,Math.PI*2);x.clip();try{x.drawImage(logo,60,160,120,120)}catch(e){}x.restore();
+  x.save();x.translate(200,236);x.rotate(-0.05);x.font=`52px ${BR}`;x.fillStyle='#000';x.fillText(club(),3,3);x.fillStyle=C.neon;x.fillText(club(),0,0);x.restore();
+  const ti=new Image();ti.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(trophySvg(t.posizione));try{await ti.decode()}catch(e){}
+  try{x.drawImage(ti,W/2-170,300,340,408)}catch(e){}
+  x.fillStyle='#2a4566';x.fillRect(W/2-260,712,520,16);
+  let y=840;x.textAlign='center';x.fillStyle=tone;x.font=`900 120px ${DISP}`;x.fillText(posTxt(t.posizione)+' POSTO',W/2,y);y+=74;
+  x.fillStyle=C.ink;let sz=60;x.font=`800 ${sz}px ${DISP}`;let nl=wrapN(x,String(t.torneo).toUpperCase(),W-140,2);
+  while(sz>40&&nl.some(l=>x.measureText(l).width>W-140)){sz-=4;x.font=`800 ${sz}px ${DISP}`;nl=wrapN(x,String(t.torneo).toUpperCase(),W-140,2)}
+  nl.forEach((l,i)=>{if(i)y+=sz;x.fillText(l,W/2,y)});y+=56;
+  const st=tStats(t.torneo);x.font=`600 30px ${BODY}`;x.fillStyle=C.muted;
+  const line=[t.partecipanti?'su '+t.partecipanti+' squadre':'',st.n?`${st.v}V ${st.nn}N ${st.p}P · ${st.gf} gol fatti, ${st.gs} subiti`:''].filter(Boolean).join(' · ');
+  if(line){x.fillText(line,W/2,y);y+=50}
+  if(st.top){x.font=`40px ${BR}`;x.fillStyle=C.neon;x.fillText(ellip(x,'Bomber: '+pname(st.top.gid)+' ('+st.top.gol+' gol)',W-140),W/2,y);y+=64}
+  if(t.nota){y+=10;x.font=`italic 400 32px ${BODY}`;x.fillStyle=C.ink;wrapN(x,'«'+t.nota+'»',W-160,12).forEach(l=>{x.fillText(l,W/2,y);y+=44})}
+  x.textAlign='left';
+  H=Math.max(1350,Math.ceil(y+200));const fin=document.createElement('canvas');fin.width=W;fin.height=H;const f=fin.getContext('2d');f.drawImage(c,0,0);
+  f.fillStyle=C.line;f.fillRect(60,H-120,W-120,2);
+  f.font=`600 24px ${BODY}`;f.fillStyle=C.muted;f.fillText((club()+' · Calcio a 5 · Est. 2026').toUpperCase(),60,H-66);
+  f.textAlign='right';f.fillStyle=C.neon;f.fillText(location.host,W-60,H-66);
+  f.strokeStyle=tone;f.lineWidth=6;f.strokeRect(24,24,W-48,H-48);
+  return new Promise(res=>fin.toBlob(res,'image/png'));
+}
+async function shareTrophy(id,btn){
+  const t=S.trophies.find(x=>x.id===id);if(!t)return;btn.disabled=true;btn.textContent='Preparo…';
+  try{const blob=await drawTrophy(t);const slug=String(t.torneo||'torneo').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);sharePreview(blob,`trofeo-${slug}.png`,posTxt(t.posizione)+' posto · '+t.torneo)}
+  catch(e){toast('Non sono riuscito a creare l\'immagine');btn.disabled=false;btn.textContent='Condividi'}
+}
 function render(){
-  const st=stats();renderHero();renderMatches();renderAlbum(st);renderStandings(st);renderAwards(st);renderMarket();renderPress();renderPagellino();
+  const st=stats();renderHero();renderMatches();renderAlbum(st);renderStandings(st);renderAwards(st);renderMarket();renderPress();renderPagellino();renderTrophies();
   $('presBar').hidden=!S.isOwner;$('loginBtn').hidden=S.isOwner;
   if(sheetState.refresh)sheetState.refresh();
 }
 
 /* ---------- TABS ---------- */
-const TABS=['partite','pagellino','figurine','classifiche','premi','mercato','stampa'];
+const TABS=['partite','pagellino','figurine','classifiche','premi','trofei','mercato','stampa'];
 function showTab(t){if(!TABS.includes(t))t='partite';
   document.querySelectorAll('[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==t);
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
@@ -953,7 +1091,7 @@ function storedVoteCode(){try{return localStorage.getItem('sf-vcode')||''}catch(
 async function load(){
   try{const d=await api('/api/data'+(S.uid?'?voter='+encodeURIComponent(S.uid):''));
     S.info=d.club||{};S.players={};(d.giocatori||[]).forEach(p=>S.players[p.id]=p);
-    S.matches=d.partite||[];S.news=d.comunicati||[];S.confs=d.conferenze||[];S.deals=d.mercato||[];S.ballots=d.sondaggi||[];S.mine=d.mine||null;S.voteCode=!!d.codiceSpogliatoio;
+    S.matches=d.partite||[];S.news=d.comunicati||[];S.confs=d.conferenze||[];S.deals=d.mercato||[];S.trophies=d.trofei||[];S.ballots=d.sondaggi||[];S.mine=d.mine||null;S.voteCode=!!d.codiceSpogliatoio;
     $('noData').hidden=true;render()}
   catch(e){$('noData').hidden=false}
 }
@@ -989,6 +1127,10 @@ document.addEventListener('submit',async e=>{
   else if(f.id==='fNews')await save('comunicati',{titolo:$('n_tit').value.trim(),data:$('n_data').value||today(),firma:$('n_firma').value.trim(),testo:$('n_testo').value.trim()},'Comunicato pubblicato');
   else if(f.id==='fDeal'){if(!$('d_gioc').value.trim()){toast('Serve il nome del giocatore');btn.disabled=false;return}
     await save('mercato',{giocatore:$('d_gioc').value.trim(),tipo:$('d_tipo').value||'Acquisto',da:$('d_da').value.trim(),a:$('d_a').value.trim(),cifra:$('d_cifra').value.trim(),stato:$('d_stato').value||'Voci',fonte:$('d_fonte').value.trim(),data:$('d_data').value||today(),testo:$('d_testo').value.trim()},'Voce di mercato pubblicata')}
+  else if(f.id==='fTrophy'){const name=trophyName(),pos=parseInt($('t_pos').value,10);
+    if(!name||!(pos>=1)){toast('Servono torneo e posizione');btn.disabled=false;return}
+    if(S.trophies.some(t=>t.torneo===name&&t.id!==id)){toast('Questo torneo è già in bacheca: modifica quel trofeo');btn.disabled=false;return}
+    await save('trofei',{torneo:name,posizione:pos,partecipanti:parseInt($('t_part').value,10)||'',data:$('t_data').value||today(),nota:$('t_nota').value.trim()},pos<=3?'Coppa in bacheca!':'Medaglia in bacheca')}
   else if(f.id==='fConf'){const qs=readQA();if(!qs.length){toast('Serve almeno una domanda');btn.disabled=false;return}
     await save('conferenze',{titolo:$('c_tit').value.trim()||'Conferenza stampa',partitaId:$('c_match').value,data:$('c_data').value||today(),domande:qs},'Conferenza pubblicata')}
   else if(f.id==='fLogin'){if(await tryLogin($('l_code').value.trim())){closeSheet();toast('Benvenuto, Presidente')}else btn.disabled=false;return}
@@ -1071,6 +1213,8 @@ document.addEventListener('click',async e=>{
     case 'new-player':playerForm();break; case 'edit-player':playerForm(id);break;
     case 'new-news':newsForm();break; case 'edit-news':newsForm(id);break;
     case 'new-deal':dealForm();break; case 'edit-deal':dealForm(id);break;
+    case 'new-trophy':trophyForm();break; case 'edit-trophy':trophyForm(id);break; case 'open-trophy':trophyDetail(id);break;
+    case 'share-trophy':shareTrophy(id,t);break; case 'ai-trophy':aiTrophy();break;
     case 'new-conf':confForm();break; case 'edit-conf':confForm(id);break; case 'conf-for':confForm(null,id);break;
     case 'pgl-dl':downloadPagellino();break;
     case 'share-deal':shareDeal(id,t);break;
@@ -1089,11 +1233,12 @@ document.addEventListener('click',async e=>{
       catch(e){toast(e.message||'Voto non registrato')}finally{t.disabled=false}break}
     case 'login':loginForm();break;
     case 'logout':S.code='';S.isOwner=false;S.sample=null;try{localStorage.removeItem('sf-code')}catch(e){}closeSheet();render();toast('Uscito dall\'Area Presidenza');break;
-    default:if(a&&a.startsWith('del-')){if(!arm(t))return;const c={'del-match':'partite','del-player':'giocatori','del-news':'comunicati','del-deal':'mercato','del-conf':'conferenze'}[a];
+    default:if(a&&a.startsWith('del-')){if(!arm(t))return;const c={'del-match':'partite','del-player':'giocatori','del-news':'comunicati','del-deal':'mercato','del-conf':'conferenze','del-trophy':'trofei'}[a];
       if(await write(()=>col(c).doc(id).delete(),'Eliminato'))closeSheet()}
   }
 });
 document.addEventListener('change',async e=>{
+  if(e.target.id==='t_tsel'){$('t_altroF').hidden=e.target.value!=='__altro'}
   if(e.target.id==='pglSel'){S.pglId=e.target.value;renderPagellino();return}
   if(e.target.id==='m_gioc')$('m_played').hidden=!e.target.checked;
   if(e.target.classList.contains('pin'))e.target.closest('.pgrow').classList.toggle('off',!e.target.checked);
@@ -1102,6 +1247,7 @@ document.addEventListener('change',async e=>{
 });
 document.addEventListener('input',e=>{const r=e.target.closest&&e.target.closest('.pgrow[data-gid]');
   if(r&&e.target.matches('.pv,.pgol,.pas,.pnota')&&!r.querySelector('.pin').checked&&e.target.value){r.querySelector('.pin').checked=true;r.classList.remove('off')}
+  if(e.target.id==='t_pos')trophyHint();
   if(e.target.matches('.pgol,#m_aut'))updTot()});
 $('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('sheet').hidden)closeSheet()});
