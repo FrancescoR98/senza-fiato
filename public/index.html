@@ -552,7 +552,7 @@ function renderMarket(){
     <span class="kind">${esc(d.tipo||'Acquisto')}</span><h3>${esc(d.giocatore)}</h3>
     ${d.da||d.a?`<div class="route"><span>${esc(d.da||'?')}</span><i>→</i><span>${esc(d.a||'?')}</span></div>`:''}
     ${d.cifra?`<div class="fee">${esc(d.cifra)}</div>`:''}<p>${esc(d.testo||'')}</p>
-    <div class="ft"><span>${esc(fmtD(d.data,{day:'numeric',month:'long'}))}${d.fonte?' · fonte: '+esc(d.fonte):''}</span>${S.isOwner?`<button class="btn small" data-act="edit-deal" data-id="${d.id}">Modifica</button>`:''}</div></article>`).join('')+'</div>';
+    <div class="ft"><span>${esc(fmtD(d.data,{day:'numeric',month:'long'}))}${d.fonte?' · fonte: '+esc(d.fonte):''}</span><span style="display:flex;gap:6px"><button class="btn small primary" data-act="share-deal" data-id="${d.id}">Condividi</button>${S.isOwner?`<button class="btn small" data-act="edit-deal" data-id="${d.id}">Modifica</button>`:''}</span></div></article>`).join('')+'</div>';
   $('market').innerHTML=h;
 }
 function renderPress(){
@@ -579,7 +579,7 @@ function renderPagellino(){
   const best=[...rows].filter(r=>r.voto!==''&&r.voto!=null).sort((a,b)=>b.voto-a.voto);
   const logo=document.querySelector('.logo').src;
   $('pagellino').innerHTML=`<div class="pgl-bar"><div class="field"><label for="pglSel">Partita</label><select id="pglSel">${ms.map(x=>opt(x.id,matchLabel(x),S.pglId)).join('')}</select></div>
-    ${S.dl?'<button class="btn primary" data-act="pgl-dl" id="pglDl">Scarica immagine</button>':''}
+    ${S.dl?'<button class="btn primary" data-act="pgl-dl" id="pglDl">Condividi immagine</button>':''}
     ${S.isOwner?`<button class="btn" data-act="edit-match" data-id="${m.id}">Modifica voti</button>`:''}</div>
   <div class="pgl-layout"><article class="pgl" aria-label="Pagellino">
     <div class="pgl-hd"><img src="${logo}" alt=""><div><span class="brush">Pagellino</span>
@@ -642,11 +642,86 @@ async function drawPagellino(m){
   return new Promise(res=>c.toBlob(res,'image/png'));
 }
 async function downloadPagellino(){
-  const m=S.matches.find(x=>x.id===S.pglId);if(!m||!S.dl)return;const b=$('pglDl');b.disabled=true;b.textContent='Preparo l\'immagine…';
+  const m=S.matches.find(x=>x.id===S.pglId);if(!m)return;const b=$('pglDl');b.disabled=true;b.textContent='Preparo l\'immagine…';
   try{const blob=await drawPagellino(m);const slug=(m.avversario||'partita').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-    await S.dl.save({filename:`pagellino-${slug}-${m.data||''}.png`,data:blob});toast('Pagellino salvato')}
-  catch(e){const c=e&&e.code;if(c==='declined'){}else if(['unavailable','not_granted','capability_disabled','capability_removed'].includes(c)){S.dl=null;renderPagellino();toast('Download non disponibile qui')}else toast('Non sono riuscito a creare l\'immagine')}
-  finally{const bb=$('pglDl');if(bb){bb.disabled=false;bb.textContent='Scarica immagine'}}
+    sharePreview(blob,`pagellino-${slug}-${m.data||''}.png`,'Pagellino · '+club()+' '+goals(m)+'-'+(+m.golLoro||0)+' '+m.avversario)}
+  catch(e){toast('Non sono riuscito a creare l\'immagine')}
+  finally{const bb=$('pglDl');if(bb){bb.disabled=false;bb.textContent='Condividi immagine'}}
+}
+/* --- condivisione immagini --- */
+let shareBlob=null,shareName='',shareTitle='',shareUrl='';
+function sharePreview(blob,filename,title){
+  shareBlob=blob;shareName=filename;shareTitle=title;if(shareUrl)URL.revokeObjectURL(shareUrl);shareUrl=URL.createObjectURL(blob);
+  const file=new File([blob],filename,{type:'image/png'});
+  const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  openSheet('Condividi',`<img src="${shareUrl}" alt="Anteprima dell'immagine" style="width:100%;max-width:420px;margin:0 auto;display:block;border-radius:10px;border:1px solid var(--line)">
+    <div class="actions"><div class="right" style="margin:0 auto">${canShare?'<button class="btn primary" data-act="do-share">Condividi su WhatsApp e altre app</button>':''}<button class="btn${canShare?'':' primary'}" data-act="do-save">Scarica immagine</button></div></div>
+    ${canShare?'':'<div class="ai-msg" style="text-align:center">Da computer scaricala e poi allegala su WhatsApp Web. Dal telefono il pulsante Condividi apre direttamente WhatsApp.</div>'}`);
+}
+async function doShare(){
+  const file=new File([shareBlob],shareName,{type:'image/png'});
+  try{await navigator.share({files:[file],title:shareTitle})}
+  catch(e){if(e&&e.name==='AbortError')return;doSave()}
+}
+function doSave(){S.dl.save({filename:shareName,data:shareBlob});toast('Immagine scaricata')}
+
+/* --- immagine della voce di mercato --- */
+function wrapN(x,text,width,max){const words=String(text||'').split(/\s+/).filter(Boolean);const lines=[];let cur='';
+  for(let i=0;i<words.length;i++){const t=cur?cur+' '+words[i]:words[i];if(x.measureText(t).width>width&&cur){lines.push(cur);cur=words[i];if(lines.length===max){lines[max-1]=ellip(x,lines[max-1]+' '+words.slice(i).join(' '),width);return lines}}else cur=t}
+  if(cur)lines.push(cur);return lines}
+async function drawDeal(d){
+  const DISP='"Big Shoulders Display", Impact, sans-serif',BODY='Barlow, Arial, sans-serif',BR='"Permanent Marker", cursive';
+  try{await Promise.all(['900 40px "Big Shoulders Display"','800 40px "Big Shoulders Display"','40px "Permanent Marker"','600 20px Barlow','italic 400 20px Barlow'].map(f=>document.fonts.load(f)))}catch(e){}
+  const W=1080;let H=2600;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const C={bg:'#07111d',neon:'#85f843',ink:'#eef5ea',muted:'#93a7b9',line:'#1f3550',sweat:'#8fd8ff',gold:'#ffd24a',bad:'#ff6f7d',card:'#0d1a2a'};
+  const stCol={Ufficiale:C.neon,Trattativa:C.sweat,Voci:C.muted,Saltata:C.bad}[d.stato]||C.muted;
+  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(133,248,67,.06)';x.lineWidth=1;for(let i=0;i<W;i+=36){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,H);x.stroke()}for(let j=0;j<H;j+=36){x.beginPath();x.moveTo(0,j+.5);x.lineTo(W,j+.5);x.stroke()}
+  // fascia breaking news
+  x.fillStyle=C.neon;x.fillRect(24,70,W-48,64);x.fillStyle=C.bg;x.font=`900 40px ${DISP}`;x.fillText('CALCIOMERCATO · ESCLUSIVA',60,116);
+  x.textAlign='right';x.font=`700 26px ${BODY}`;x.fillText(fmtD(d.data,{day:'numeric',month:'long',year:'numeric'}).toUpperCase(),W-60,113);x.textAlign='left';
+  // logo
+  const img=new Image();img.src=document.querySelector('.logo').src;try{await img.decode()}catch(e){}
+  x.save();x.beginPath();x.arc(140,250,80,0,Math.PI*2);x.clip();try{x.drawImage(img,60,170,160,160)}catch(e){}x.restore();
+  x.save();x.translate(250,240);x.rotate(-0.05);x.font=`64px ${BR}`;x.fillStyle='#000';x.fillText(club(),4,4);x.fillStyle=C.neon;x.fillText(club(),0,0);x.restore();
+  x.font=`700 28px ${BODY}`;x.fillStyle=C.sweat;x.fillText(String(d.tipo||'Acquisto').toUpperCase(),254,300);
+  // timbro stato
+  x.save();x.translate(890,420);x.rotate(0.14);x.font=`900 50px ${DISP}`;const st=String(d.stato||'Voci').toUpperCase();const sw=x.measureText(st).width+40;
+  x.strokeStyle=stCol;x.lineWidth=6;x.strokeRect(-sw/2,-42,sw,74);x.fillStyle=stCol;x.textAlign='center';x.fillText(st,0,14);x.restore();x.textAlign='left';
+  // nome giocatore
+  let y=420;x.fillStyle=C.ink;let sz=118;x.font=`900 ${sz}px ${DISP}`;let nl=wrapN(x,String(d.giocatore||'').toUpperCase(),700,2);
+  while(sz>70&&nl.some(l=>x.measureText(l).width>700)){sz-=6;x.font=`900 ${sz}px ${DISP}`;nl=wrapN(x,String(d.giocatore||'').toUpperCase(),700,2)}
+  nl.forEach((l,i)=>{if(i)y+=sz*0.95;x.fillText(l,60,y)});y+=40;
+  // rotta
+  if(d.da||d.a){x.font=`800 40px ${DISP}`;const da=ellip(x,String(d.da||'?').toUpperCase(),400),aa=ellip(x,String(d.a||'?').toUpperCase(),400);
+    const w1=x.measureText(da).width+36,w2=x.measureText(aa).width+36;
+    x.fillStyle=C.card;x.strokeStyle=C.line;x.lineWidth=2;x.beginPath();x.roundRect(60,y,w1,64,10);x.fill();x.stroke();x.fillStyle=C.ink;x.fillText(da,78,y+46);
+    x.fillStyle=C.neon;x.font=`900 48px ${DISP}`;x.fillText('→',60+w1+16,y+48);
+    const ax=60+w1+70;x.font=`800 40px ${DISP}`;if(ax+w2>W-60){y+=78;x.fillStyle=C.card;x.beginPath();x.roundRect(60,y,w2,64,10);x.fill();x.stroke();x.fillStyle=C.neon;x.fillText(aa,78,y+46)}
+    else{x.fillStyle=C.card;x.beginPath();x.roundRect(ax,y,w2,64,10);x.fill();x.stroke();x.fillStyle=C.neon;x.fillText(aa,ax+18,y+46)}
+    y+=110}
+  // cifra
+  if(d.cifra){x.font=`700 24px ${BODY}`;x.fillStyle=C.muted;x.fillText('CIFRA DELL\'OPERAZIONE',60,y);y+=50;x.font=`44px ${BR}`;x.fillStyle=C.gold;wrapN(x,d.cifra,W-120,2).forEach(l=>{x.fillText(l,60,y);y+=54});y+=16}
+  // testo
+  x.fillStyle=C.line;x.fillRect(60,y,W-120,2);y+=56;
+  x.font=`400 34px ${BODY}`;x.fillStyle=C.ink;wrapN(x,d.testo||'',W-120,30).forEach(l=>{x.fillText(l,60,y);y+=46});
+  // altezza finale: almeno 4:5, si allunga se il testo è lungo
+  H=Math.max(1350,Math.ceil(y+230));const fin=document.createElement('canvas');fin.width=W;fin.height=H;const f=fin.getContext('2d');f.drawImage(c,0,0);
+  const footTop=H-170;
+  // fonte e piede
+  f.fillStyle=C.bg;f.fillRect(30,footTop-40,W-60,H-footTop+10);
+  if(d.fonte){f.font=`italic 400 28px ${BODY}`;f.fillStyle=C.muted;f.fillText(ellip(f,'Fonte: '+d.fonte,W-120),60,footTop+10)}
+  f.fillStyle=C.line;f.fillRect(60,footTop+44,W-120,2);
+  f.font=`600 24px ${BODY}`;f.fillStyle=C.muted;f.fillText((club()+' · Calcio a 5 · Est. 2026').toUpperCase(),60,H-66);
+  f.textAlign='right';f.fillStyle=C.neon;f.fillText(location.host,W-60,H-66);f.textAlign='left';
+  f.strokeStyle=C.neon;f.lineWidth=6;f.strokeRect(24,24,W-48,H-48);
+  return new Promise(res=>fin.toBlob(res,'image/png'));
+}
+async function shareDeal(id,btn){
+  const d=S.deals.find(x=>x.id===id);if(!d)return;btn.disabled=true;const t=btn.textContent;btn.textContent='Preparo…';
+  try{const blob=await drawDeal(d);const slug=String(d.giocatore||'mercato').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+    sharePreview(blob,`mercato-${slug}.png`,'Calciomercato · '+d.giocatore)}
+  catch(e){toast('Non sono riuscito a creare l\'immagine')}finally{btn.disabled=false;btn.textContent=t}
 }
 function render(){
   const st=stats();renderHero();renderMatches();renderAlbum(st);renderStandings(st);renderAwards(st);renderMarket();renderPress();renderPagellino();
@@ -998,6 +1073,9 @@ document.addEventListener('click',async e=>{
     case 'new-deal':dealForm();break; case 'edit-deal':dealForm(id);break;
     case 'new-conf':confForm();break; case 'edit-conf':confForm(id);break; case 'conf-for':confForm(null,id);break;
     case 'pgl-dl':downloadPagellino();break;
+    case 'share-deal':shareDeal(id,t);break;
+    case 'do-share':doShare();break;
+    case 'do-save':doSave();break;
     case 'ai-notes':aiNotes();break;
     case 'club':clubForm();break;
     case 'ai-chron':aiChron();break; case 'ai-deal':aiDeal();break; case 'ai-conf':aiConf();break;
