@@ -197,7 +197,7 @@ tbody tr[data-act]:hover td{background:var(--surface-2)}
 .cs h3{font-family:var(--f-display);font-size:1.7rem;font-weight:900;line-height:1.05;text-transform:uppercase;margin-bottom:10px}
 .cs p{margin:0 0 10px;max-width:68ch;white-space:pre-line}
 .cs .sign{font-style:italic;color:var(--muted);text-align:right}
-.cs .tools{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.cs .tools{display:flex;gap:6px;justify-content:flex-end;margin-top:12px}
 .qa{display:flex;flex-direction:column;gap:12px;max-width:70ch}
 .qa .q{color:var(--muted)}
 .qa .q b{color:var(--sweat);font-weight:700}
@@ -834,10 +834,10 @@ function renderPress(){
   $('press').innerHTML='<div class="press">'+items.map(({k,d})=>k==='n'?
     `<article class="cs"><div class="hd"><span class="eyebrow">Comunicato ufficiale n. ${num[d.id]}</span><span class="eyebrow">${esc(fmtD(d.data,{day:'numeric',month:'long',year:'numeric'}))}</span></div>
     <h3>${esc(d.titolo)}</h3><p>${esc(d.testo)}</p><div class="sign">${esc(d.firma||('La Presidenza'+(S.info.presidente?' · '+S.info.presidente:'')))}</div>
-    ${S.isOwner?`<div class="tools"><button class="btn small" data-act="edit-news" data-id="${d.id}">Modifica</button></div>`:''}</article>`
-   :`<article class="cs conf"><div class="hd"><span class="eyebrow">Conferenza stampa${d.partitaId&&S.matches.find(m=>m.id===d.partitaId)?' · '+esc(matchLabel(S.matches.find(m=>m.id===d.partitaId))):''}</span><span class="eyebrow">${esc(fmtD(d.data,{day:'numeric',month:'long',year:'numeric'}))}</span></div>
+    <div class="tools"><button class="btn small primary" data-act="share-news" data-id="${d.id}" data-num="${num[d.id]}">Condividi</button>${S.isOwner?`<button class="btn small" data-act="edit-news" data-id="${d.id}">Modifica</button>`:''}</div></article>`
+   :`<article class="cs conf"><div class="hd"><span class="eyebrow">Conferenza stampa${d.partitaId&&S.allMatches.find(m=>m.id===d.partitaId)?' · '+esc(matchLabel(S.allMatches.find(m=>m.id===d.partitaId))):''}</span><span class="eyebrow">${esc(fmtD(d.data,{day:'numeric',month:'long',year:'numeric'}))}</span></div>
     <h3>${esc(d.titolo)}</h3><div class="qa">${(d.domande||[]).map(q=>`<div><div class="q"><b>${esc(q.giornalista||'Giornalista')}${q.testata?' ('+esc(q.testata)+')':''}:</b> ${esc(q.domanda)}</div><div class="a"><b>${esc(presName())}:</b> ${esc(q.risposta)}</div></div>`).join('')}</div>
-    ${S.isOwner?`<div class="tools"><button class="btn small" data-act="edit-conf" data-id="${d.id}">Modifica</button></div>`:''}</article>`).join('')+'</div>';
+    <div class="tools"><button class="btn small primary" data-act="share-conf" data-id="${d.id}">Condividi</button>${S.isOwner?`<button class="btn small" data-act="edit-conf" data-id="${d.id}">Modifica</button>`:''}</div></article>`).join('')+'</div>';
 }
 const ROLE_ORD={'Portiere':0,'Difensore':1,'Centrocampista':2,'Tuttocampista':3,'Attaccante':4,'Panchinaro di lusso':5};
 function pglRows(m){return Object.entries(m.pagelle||{}).map(([gid,r])=>{const p=S.players[gid]||{};return {gid,nome:p.nome||'Ex giocatore',numero:p.numero||'',ruolo:p.ruolo||'',voto:r.voto,nota:r.nota||'',gol:+r.gol||0,assist:+r.assist||0,giallo:!!r.giallo,mvp:m.mvp===gid,bo:m.bombola===gid}})
@@ -1219,6 +1219,52 @@ async function drawAnnuario(A){
 async function shareAnnuario(btn){
   if(S.season==='sempre')return;btn.disabled=true;const t=btn.textContent;btn.textContent='Preparo…';
   try{const A=annData(S.season);const blob=await drawAnnuario(A);sharePreview(blob,`annuario-${seasonKey(S.season)}.png`,'Annuario '+club()+' '+S.season)}
+  catch(e){toast('Non sono riuscito a creare l\'immagine')}finally{btn.disabled=false;btn.textContent=t}
+}
+/* --- immagini della sala stampa --- */
+function newsNumber(id){const ns=[...S.allNews].filter(n=>seasonOf(n.data)===seasonOf((S.allNews.find(x=>x.id===id)||{}).data)).sort((a,b)=>(a.data||'').localeCompare(b.data||''));return ns.findIndex(n=>n.id===id)+1}
+async function drawPress(kind,d){
+  const DISP='"Big Shoulders Display", Impact, sans-serif',BODY='Barlow, Arial, sans-serif',BR='"Permanent Marker", cursive';
+  try{await Promise.all(['900 40px "Big Shoulders Display"','800 40px "Big Shoulders Display"','40px "Permanent Marker"','600 20px Barlow','700 20px Barlow','italic 400 20px Barlow'].map(f=>document.fonts.load(f)))}catch(e){}
+  const W=1080;let H=6000;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const C={bg:'#07111d',neon:'#85f843',ink:'#eef5ea',muted:'#93a7b9',line:'#1f3550',sweat:'#8fd8ff',card:'#0d1a2a'};
+  const tone=kind==='n'?C.neon:C.sweat;
+  x.fillStyle=C.bg;x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(133,248,67,.06)';x.lineWidth=1;for(let i=0;i<W;i+=36){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,H);x.stroke()}for(let j=0;j<H;j+=36){x.beginPath();x.moveTo(0,j+.5);x.lineTo(W,j+.5);x.stroke()}
+  x.fillStyle=tone;x.fillRect(24,70,W-48,64);x.fillStyle=C.bg;x.font=`900 40px ${DISP}`;
+  x.fillText(kind==='n'?'COMUNICATO UFFICIALE N. '+newsNumber(d.id):'CONFERENZA STAMPA',60,116);
+  x.textAlign='right';x.font=`700 26px ${BODY}`;x.fillText(fmtD(d.data,{day:'numeric',month:'long',year:'numeric'}).toUpperCase(),W-60,113);x.textAlign='left';
+  const logo=new Image();logo.src=document.querySelector('.logo').src;try{await logo.decode()}catch(e){}
+  x.save();x.beginPath();x.arc(120,220,60,0,Math.PI*2);x.clip();try{x.drawImage(logo,60,160,120,120)}catch(e){}x.restore();
+  x.save();x.translate(200,236);x.rotate(-0.05);x.font=`52px ${BR}`;x.fillStyle='#000';x.fillText(club(),3,3);x.fillStyle=C.neon;x.fillText(club(),0,0);x.restore();
+  let y=340;
+  if(kind==='c'&&d.partitaId){const m=S.allMatches.find(z=>z.id===d.partitaId);if(m){x.font=`700 26px ${BODY}`;x.fillStyle=C.muted;x.fillText(ellip(x,'DOPO '+matchLabel(m).toUpperCase(),W-120),60,y);y+=56}}
+  let sz=76;x.font=`900 ${sz}px ${DISP}`;let tl=wrapN(x,String(d.titolo||'').toUpperCase(),W-120,4);
+  while(sz>48&&tl.length>3){sz-=6;x.font=`900 ${sz}px ${DISP}`;tl=wrapN(x,String(d.titolo||'').toUpperCase(),W-120,4)}
+  x.fillStyle=C.ink;tl.forEach((l,i)=>{if(i)y+=sz*.95;x.fillText(l,60,y)});y+=34;
+  x.fillStyle=tone;x.fillRect(60,y,140,6);y+=64;
+  if(kind==='n'){
+    x.font=`400 34px ${BODY}`;x.fillStyle=C.ink;
+    String(d.testo||'').split(/\n+/).map(t=>t.trim()).filter(Boolean).forEach(par=>{wrapN(x,par,W-120,40).forEach(l=>{x.fillText(l,60,y);y+=46});y+=22});
+    y+=16;x.textAlign='right';x.font=`44px ${BR}`;x.fillStyle=C.neon;x.fillText(ellip(x,d.firma||('La Presidenza'+(S.info.presidente?' · '+S.info.presidente:'')),W-120),W-60,y);x.textAlign='left';y+=30;
+  }else{
+    (d.domande||[]).forEach(q=>{
+      x.font=`700 26px ${BODY}`;x.fillStyle=C.sweat;x.fillText(ellip(x,((q.giornalista||'Giornalista')+(q.testata?' · '+q.testata:'')).toUpperCase(),W-120),60,y);y+=44;
+      x.font=`italic 400 31px ${BODY}`;x.fillStyle=C.muted;wrapN(x,q.domanda||'',W-120,12).forEach(l=>{x.fillText(l,60,y);y+=42});y+=14;
+      x.font=`700 26px ${BODY}`;x.fillStyle=C.neon;x.fillText(presName().toUpperCase(),60,y);y+=44;
+      x.font=`400 33px ${BODY}`;x.fillStyle=C.ink;wrapN(x,'«'+(q.risposta||'')+'»',W-120,20).forEach(l=>{x.fillText(l,60,y);y+=45});
+      y+=26;x.fillStyle=C.line;x.fillRect(60,y,W-120,1);y+=50});
+  }
+  H=Math.min(5900,Math.max(1350,Math.ceil(y+170)));const fin=document.createElement('canvas');fin.width=W;fin.height=H;const f=fin.getContext('2d');f.drawImage(c,0,0);
+  f.fillStyle=C.bg;f.fillRect(30,H-150,W-60,120);f.fillStyle=C.line;f.fillRect(60,H-120,W-120,2);
+  f.font=`600 24px ${BODY}`;f.fillStyle=C.muted;f.fillText((club()+' · Ufficio Stampa').toUpperCase(),60,H-66);f.textAlign='right';f.fillStyle=C.neon;f.fillText(location.host,W-60,H-66);
+  f.strokeStyle=tone;f.lineWidth=6;f.strokeRect(24,24,W-48,H-48);
+  return new Promise(res=>fin.toBlob(res,'image/png'));
+}
+async function sharePress(kind,id,btn){
+  const d=(kind==='n'?S.allNews:S.allConfs).find(z=>z.id===id);if(!d)return;btn.disabled=true;const t=btn.textContent;btn.textContent='Preparo…';
+  try{const blob=await drawPress(kind,d);const slug=String(d.titolo||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'sala-stampa';
+    sharePreview(blob,`${kind==='n'?'comunicato':'conferenza'}-${slug}.png`,(kind==='n'?'Comunicato ufficiale · ':'Conferenza stampa · ')+d.titolo)}
   catch(e){toast('Non sono riuscito a creare l\'immagine')}finally{btn.disabled=false;btn.textContent=t}
 }
 function render(){
@@ -1609,6 +1655,8 @@ document.addEventListener('click',async e=>{
     case 'edit-speech':speechForm(id);break;
     case 'ai-speech':aiSpeech();break;
     case 'share-ann':shareAnnuario(t);break;
+    case 'share-news':sharePress('n',id,t);break;
+    case 'share-conf':sharePress('c',id,t);break;
     case 'logout':S.code='';S.isOwner=false;S.sample=null;try{localStorage.removeItem('sf-code')}catch(e){}closeSheet();render();toast('Uscito dall\'Area Presidenza');break;
     default:if(a&&a.startsWith('del-')){if(!arm(t))return;const c={'del-match':'partite','del-player':'giocatori','del-news':'comunicati','del-deal':'mercato','del-conf':'conferenze','del-trophy':'trofei'}[a];
       if(await write(()=>col(c).doc(id).delete(),'Eliminato'))closeSheet()}
