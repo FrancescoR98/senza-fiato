@@ -737,14 +737,15 @@ function matchLabel(m){return (m.giocata?`${club()} ${goals(m)}-${+m.golLoro||0}
 function tally(mid){const t={mvp:{},bo:{},n:0};for(const b of S.ballots){const v=(b.voti||{})[mid];if(!v)continue;t.n++;if(v.mvp)t.mvp[v.mvp]=(t.mvp[v.mvp]||0)+1;if(v.bombola)t.bo[v.bombola]=(t.bo[v.bombola]||0)+1}return t}
 function myVote(mid){return S.mine&&S.mine.voti?S.mine.voti[mid]:null}
 
+const isGK=p=>!!p&&p.ruolo==='Portiere';
 function stats(ms){ms=ms||S.matches;const ids=new Set(ms.map(m=>m.id));
-  const st={};for(const id in S.players)st[id]={id,pres:0,gol:0,assist:0,voti:[],mvp:0,bomb:0,gialli:0,popMvp:0,popBo:0};
+  const st={};for(const id in S.players)st[id]={id,pres:0,gol:0,assist:0,voti:[],mvp:0,bomb:0,gialli:0,popMvp:0,popBo:0,gk:isGK(S.players[id]),gs:0,cs:0};
   for(const m of ms){if(!m.giocata)continue;
-    for(const [gid,p] of Object.entries(m.pagelle||{})){const s=st[gid];if(!s)continue;s.pres++;s.gol+=+p.gol||0;s.assist+=+p.assist||0;
+    for(const [gid,p] of Object.entries(m.pagelle||{})){const s=st[gid];if(!s)continue;s.pres++;s.gol+=+p.gol||0;s.assist+=+p.assist||0;if(s.gk){s.gs+=+m.golLoro||0;if(!(+m.golLoro))s.cs++}
       if(p.voto!==''&&p.voto!=null&&!isNaN(+p.voto))s.voti.push(+p.voto);if(p.giallo)s.gialli++}
     if(m.mvp&&st[m.mvp])st[m.mvp].mvp++;if(m.bombola&&st[m.bombola])st[m.bombola].bomb++}
   for(const b of S.ballots)for(const [mid,v] of Object.entries(b.voti||{})){if(!ids.has(mid))continue;if(v.mvp&&st[v.mvp])st[v.mvp].popMvp++;if(v.bombola&&st[v.bombola])st[v.bombola].popBo++}
-  for(const id in st){const v=st[id].voti;st[id].media=v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
+  for(const id in st){const v=st[id].voti;st[id].media=v.length?v.reduce((a,b)=>a+b,0)/v.length:null;st[id].gsm=st[id].gk&&st[id].pres?st[id].gs/st[id].pres:null}
   return st;
 }
 
@@ -801,24 +802,27 @@ function renderAlbum(st){
       <span class="stk-num">${esc(p.numero||'–')}</span><span class="stk-tier">${p.ritirato?'Ritirato':t==='raro'?'Oro raro':t==='oro'?'Oro':'Argento'}</span></div>
       <div class="nameplate"><b>${esc(p.nome)}</b><span>${esc(p.ruolo||'')}</span></div></div>
     <div class="face back"><h3>${esc(p.nome)}</h3><div class="nick">${p.soprannome?esc(p.soprannome):'&nbsp;'}</div>
-      <dl><dt>Presenze</dt><dd>${s.pres}</dd><dt>Gol</dt><dd>${s.gol}</dd><dt>Assist</dt><dd>${s.assist}</dd><dt>Media voto</dt><dd>${fmtV(s.media==null?null:s.media.toFixed(2))}</dd><dt>MVP</dt><dd>${s.mvp}</dd><dt>Bombole</dt><dd>${s.bomb}</dd>${car?`<dt>Carriera</dt><dd>${car[p.id].pres} pres · ${car[p.id].gol} gol</dd>`:''}</dl>
+      <dl><dt>Presenze</dt><dd>${s.pres}</dd>${s.gk?`<dt>Gol subiti</dt><dd>${s.gs}</dd><dt>Clean sheet</dt><dd>${s.cs}</dd><dt>Subiti a partita</dt><dd>${s.gsm==null?'–':fmtV(s.gsm.toFixed(1))}</dd>`:''}<dt>Gol</dt><dd>${s.gol}</dd><dt>Assist</dt><dd>${s.assist}</dd><dt>Media voto</dt><dd>${fmtV(s.media==null?null:s.media.toFixed(2))}</dd><dt>MVP</dt><dd>${s.mvp}</dd><dt>Bombole</dt><dd>${s.bomb}</dd>${car?`<dt>Carriera</dt><dd>${car[p.id].pres} pres · ${s.gk?car[p.id].cs+' CS':car[p.id].gol+' gol'}</dd>`:''}</dl>
       <div class="motto-s">${esc(p.motto||'')}</div><span class="btn small open" data-act="open-player" data-id="${p.id}">Scheda completa</span></div>
     </div></button>`}).join('')+'</div>';
 }
-const METRICHE=[['gol','Gol','gol'],['assist','Assist','assist'],['ga','Gol+Assist','g+a'],['media','Media voto','media'],['mvp','MVP','mvp'],['popMvp','Voti del popolo','voti'],['pres','Presenze','pres.'],['bomb','Bombole','bombole'],['gialli','Gialli','gialli']];
+const METRICHE=[['gol','Gol','gol'],['assist','Assist','assist'],['ga','Gol+Assist','g+a'],['media','Media voto','media'],['mvp','MVP','mvp'],['popMvp','Voti del popolo','voti'],['pres','Presenze','pres.'],['bomb','Bombole','bombole'],['gialli','Gialli','gialli'],['cs','Clean sheet','clean sh.'],['gsm','Subiti a partita','a partita']];
+const GK_MET=['cs','gsm'],ASC_MET=['gsm'];
 function renderStandings(st){
-  const ids=new Set(seasonRoster(st).map(p=>p.id));const rows=Object.values(st).filter(s=>S.players[s.id]&&ids.has(s.id)).map(s=>({...s,p:S.players[s.id],ga:s.gol+s.assist}));
-  if(!rows.length){$('standings').innerHTML=`<div class="empty"><b>Classifiche vuote</b>Si riempiono da sole con le pagelle delle partite.</div>`;return}
+  const ids=new Set(seasonRoster(st).map(p=>p.id));const kk=METRICHE.some(m=>m[0]===S.sort.k)?S.sort.k:'gol';let rows=Object.values(st).filter(s=>S.players[s.id]&&ids.has(s.id)).map(s=>({...s,p:S.players[s.id],ga:s.gol+s.assist}));
+  if(GK_MET.includes(kk))rows=rows.filter(r=>r.gk&&r.pres>0);
+  if(!rows.length&&!GK_MET.includes(kk)){$('standings').innerHTML=`<div class="empty"><b>Classifiche vuote</b>Si riempiono da sole con le pagelle delle partite.</div>`;return}
   const k=METRICHE.some(m=>m[0]===S.sort.k)?S.sort.k:'gol';const met=METRICHE.find(m=>m[0]===k);
-  rows.sort((a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return b.pres-a.pres;if(x==null)return 1;if(y==null)return -1;return (y-x)||(b.pres-a.pres)});
+  const dir=ASC_MET.includes(k)?-1:1;rows.sort((a,b)=>{const x=a[k],y=b[k];if(x==null&&y==null)return b.pres-a.pres;if(x==null)return 1;if(y==null)return -1;return dir*(y-x)||(b.pres-a.pres)});
   let pos=0,prev=undefined;
   $('standings').innerHTML=`<div class="lb-chips" role="tablist">${METRICHE.map(([key,l])=>`<button class="chip" data-sort="${key}" aria-pressed="${key===k}">${l}</button>`).join('')}</div>
-  <div class="lb">${rows.map((r,i)=>{const v=r[k];if(v!==prev){pos=i+1;prev=v}const has=v!=null&&(k==='media'||v>0);
-    const shown=k==='media'?(v==null?'–':fmtV(v.toFixed(2))):v;
+  ${rows.length?'':'<div class="empty"><b>Nessun portiere</b>Questa classifica è solo per chi ha il ruolo «Portiere» nella scheda giocatore.</div>'}<div class="lb">${rows.map((r,i)=>{const v=r[k];if(v!==prev){pos=i+1;prev=v}const has=v!=null&&(k==='media'||k==='gsm'||v>0);
+    const shown=k==='media'?(v==null?'–':fmtV(v.toFixed(2))):k==='gsm'?(v==null?'–':fmtV(v.toFixed(1))):v;
     return `<button class="lb-row ${has&&pos<=3?'p'+pos:''}" data-act="open-player" data-id="${r.id}"><span class="lb-pos">${has?pos:'–'}</span>
       <span class="lb-av">${r.p.foto?`<img src="${esc(r.p.foto)}" alt="">`:esc(initials(r.p.nome))}</span>
-      <span class="lb-name"><b>${esc(r.p.nome)}</b><span>${r.pres} pres · ${r.gol} G · ${r.assist} A${r.media!=null?' · '+fmtV(r.media.toFixed(1)):''}</span></span>
+      <span class="lb-name"><b>${esc(r.p.nome)}</b><span>${r.pres} pres · ${r.gk?r.gs+' subiti · '+r.cs+' CS':r.gol+' G · '+r.assist+' A'}${r.media!=null?' · '+fmtV(r.media.toFixed(1)):''}</span></span>
       <span class="lb-val">${shown}<small>${met[2]}</small></span></button>`}).join('')}</div>`;
+  const on=document.querySelector('#standings .lb-chips [aria-pressed="true"]');if(on)on.parentNode.scrollLeft=Math.max(0,on.offsetLeft-on.parentNode.offsetLeft-16);
 }
 function awardList(st,nPlayed){
   const arr=Object.values(st).filter(x=>S.players[x.id]);const minP=Math.max(1,Math.ceil(nPlayed/3));
@@ -830,6 +834,7 @@ function awardList(st,nPlayed){
     ['Polmone d\'Acciaio','Più volte MVP secondo la Presidenza','MVP',top(x=>x.mvp),v=>v+'×'],
     ['Idolo del Popolo','Più voti MVP nei sondaggi dello spogliatoio','♥',top(x=>x.popMvp),v=>v+' voti','pop'],
     ['Stakanovista','Non salta una partita, nemmeno con la febbre','∞',top(x=>x.pres),v=>v+' pres.'],
+    ['Saracinesca','Il portiere con più partite a porta inviolata','CS',top(x=>x.cs,x=>x.gk),v=>v+' clean sheet'],
     ['Bombola d\'Ossigeno','Più volte peggiore in campo. Gli serve aria.','O₂',top(x=>x.bomb),v=>v+'×','anti'],
     ['Capro Espiatorio','Più voti Bombola nei sondaggi','?!',top(x=>x.popBo),v=>v+' voti','anti'],
     ['Macellaio','Più cartellini gialli','GIA',top(x=>x.gialli),v=>v+' gialli','anti'],
@@ -886,7 +891,7 @@ function renderPress(){
     <div class="tools"><button class="btn small primary" data-act="share-conf" data-id="${d.id}">Condividi</button>${S.isOwner?`<button class="btn small" data-act="edit-conf" data-id="${d.id}">Modifica</button>`:''}</div></article>`).join('')+'</div>';
 }
 const ROLE_ORD={'Portiere':0,'Difensore':1,'Centrocampista':2,'Tuttocampista':3,'Attaccante':4,'Panchinaro di lusso':5};
-function pglRows(m){return Object.entries(m.pagelle||{}).map(([gid,r])=>{const p=S.players[gid]||{};return {gid,nome:p.nome||'Ex giocatore',numero:p.numero||'',ruolo:p.ruolo||'',voto:r.voto,nota:r.nota||'',gol:+r.gol||0,assist:+r.assist||0,giallo:!!r.giallo,mvp:m.mvp===gid,bo:m.bombola===gid}})
+function pglRows(m){return Object.entries(m.pagelle||{}).map(([gid,r])=>{const p=S.players[gid]||{};return {gid,nome:p.nome||'Ex giocatore',numero:p.numero||'',ruolo:p.ruolo||'',voto:r.voto,nota:r.nota||'',gol:+r.gol||0,assist:+r.assist||0,giallo:!!r.giallo,mvp:m.mvp===gid,bo:m.bombola===gid,cs:p.ruolo==='Portiere'&&!!m.giocata&&!(+m.golLoro)}})
   .sort((a,b)=>(ROLE_ORD[a.ruolo]??3)-(ROLE_ORD[b.ruolo]??3)||(+a.numero||99)-(+b.numero||99))}
 function teamAvg(rows){const v=rows.filter(r=>r.voto!==''&&r.voto!=null).map(r=>+r.voto);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
 function renderPagellino(){
@@ -903,7 +908,7 @@ function renderPagellino(){
     <div class="pgl-hd"><img src="${logo}" alt=""><div><span class="brush">Pagellino</span>
       <div class="pgl-score">${esc(club())} <span class="n">${goals(m)}–${+m.golLoro||0}</span> ${esc(m.avversario)}</div>
       <div class="pgl-sub">${esc(compLabel(m))} · ${esc(fmtD(m.data,{weekday:'long',day:'numeric',month:'long'}))}</div></div></div>
-    <div class="pgl-rows">${rows.map(r=>{const has=r.voto!==''&&r.voto!=null;const tags=[r.mvp?'<span class="pgl-tag mvp">MVP</span>':'',r.bo?'<span class="pgl-tag bo">Bombola</span>':'',r.gol?`<span class="pgl-tag">${r.gol} gol</span>`:'',r.assist?`<span class="pgl-tag">${r.assist} ass.</span>`:'',r.giallo?'<span class="pgl-tag yc">Giallo</span>':''].join('');
+    <div class="pgl-rows">${rows.map(r=>{const has=r.voto!==''&&r.voto!=null;const tags=[r.mvp?'<span class="pgl-tag mvp">MVP</span>':'',r.cs?'<span class="pgl-tag" style="color:var(--neon)">Porta inviolata</span>':'',r.bo?'<span class="pgl-tag bo">Bombola</span>':'',r.gol?`<span class="pgl-tag">${r.gol} gol</span>`:'',r.assist?`<span class="pgl-tag">${r.assist} ass.</span>`:'',r.giallo?'<span class="pgl-tag yc">Giallo</span>':''].join('');
       return `<div class="pgl-row"><span class="pgl-num">${esc(r.numero||'–')}</span><div style="min-width:0"><div class="pgl-name">${esc(r.nome)} ${tags}</div>${r.nota?`<div class="pgl-nota">${esc(r.nota)}</div>`:''}</div>
       <span class="pgl-v ${has?vcls(+r.voto):'sv'}">${has?fmtV(+r.voto):'s.v.'}</span></div>`}).join('')}</div>
     <div class="pgl-ft"><div><span class="eyebrow" style="color:var(--gold)">Polmone d'Acciaio</span><b>${m.mvp?esc(pname(m.mvp)):'–'}</b></div>
@@ -946,7 +951,7 @@ async function drawPagellino(m){
     x.fillStyle=C.bg;x.textAlign='center';x.font=`900 36px ${DISP}`;x.fillText(String(r.numero||'–'),90,cy+13);x.textAlign='left';
     const nm=r.nome.toUpperCase();x.font=`800 46px ${DISP}`;const nmW=Math.min(x.measureText(nm).width,520);x.fillStyle=C.ink;x.fillText(ellip(x,nm,520),148,cy-6);
     let tx=148+nmW+14;const tag=(t,bg,fg)=>{x.font=`700 20px ${BODY}`;const w=x.measureText(t).width+16;if(tx+w>890)return;x.fillStyle=bg;x.beginPath();x.roundRect(tx,cy-38,w,30,6);x.fill();x.fillStyle=fg;x.fillText(t,tx+8,cy-16);tx+=w+8};
-    if(r.mvp)tag('MVP',C.gold,C.bg);if(r.bo)tag('BOMBOLA',C.sweat,C.bg);if(r.gol)tag(r.gol+' GOL','#13243a',C.sweat);if(r.assist)tag(r.assist+' ASS.','#13243a',C.sweat);if(r.giallo)tag('GIALLO',C.gold,C.bg);
+    if(r.mvp)tag('MVP',C.gold,C.bg);if(r.cs)tag('PORTA INVIOLATA','#13243a',C.neon);if(r.bo)tag('BOMBOLA',C.sweat,C.bg);if(r.gol)tag(r.gol+' GOL','#13243a',C.sweat);if(r.assist)tag(r.assist+' ASS.','#13243a',C.sweat);if(r.giallo)tag('GIALLO',C.gold,C.bg);
     if(r.nota){x.font=`italic 400 26px ${BODY}`;x.fillStyle=C.muted;const ls=wrap2(x,r.nota,730);ls.forEach((l,k)=>x.fillText(l,148,cy+28+k*28))}
     const has=r.voto!==''&&r.voto!=null;const k=has?vcls(+r.voto):null;
     x.beginPath();x.arc(970,cy,46,0,Math.PI*2);x.fillStyle=has?C[k][0]:'#13243a';x.fill();x.lineWidth=4;x.strokeStyle=has?C[k][1]:C.line;x.stroke();
@@ -1385,8 +1390,8 @@ function playerDetail(id){
     ${p.soprannome?`<div class="brush" style="font-size:1.2rem">${esc(p.soprannome)}</div>`:''}${p.motto?`<p style="margin:8px 0 0">${esc(p.motto)}</p>`:''}</div></div>
   ${p.ritirato?'<div class="pgl-tag" style="align-self:flex-start">Ritirato</div>':''}
   <div class="eyebrow">${esc(seasonLabel(S.season))}</div>
-  <div class="statgrid"><div><b>${s.pres}</b><span>Presenze</span></div><div><b>${s.gol}</b><span>Gol</span></div><div><b>${s.assist}</b><span>Assist</span></div><div><b>${fmtV(s.media==null?null:s.media.toFixed(2))}</b><span>Media</span></div><div><b>${s.mvp}</b><span>MVP</span></div><div><b>${s.bomb}</b><span>Bombole</span></div><div><b>${s.popMvp}</b><span>Voti MVP</span></div><div><b>${s.popBo}</b><span>Voti Bombola</span></div></div>
-  ${S.season!=='sempre'?`<div class="career"><span class="eyebrow">In carriera</span><b>${c.pres}</b> pres · <b>${c.gol}</b> gol · <b>${c.assist}</b> assist · media <b>${fmtV(c.media==null?null:c.media.toFixed(2))}</b> · <b>${c.mvp}</b> MVP</div>`:''}
+  <div class="statgrid"><div><b>${s.pres}</b><span>Presenze</span></div>${s.gk?`<div><b>${s.gs}</b><span>Gol subiti</span></div><div><b>${s.cs}</b><span>Clean sheet</span></div><div><b>${s.gsm==null?'–':fmtV(s.gsm.toFixed(1))}</b><span>Subiti a partita</span></div>`:''}<div><b>${s.gol}</b><span>Gol</span></div><div><b>${s.assist}</b><span>Assist</span></div><div><b>${fmtV(s.media==null?null:s.media.toFixed(2))}</b><span>Media</span></div><div><b>${s.mvp}</b><span>MVP</span></div><div><b>${s.bomb}</b><span>Bombole</span></div><div><b>${s.popMvp}</b><span>Voti MVP</span></div><div><b>${s.popBo}</b><span>Voti Bombola</span></div></div>
+  ${S.season!=='sempre'?`<div class="career"><span class="eyebrow">In carriera</span><b>${c.pres}</b> pres · ${c.gk?`<b>${c.gs}</b> subiti · <b>${c.cs}</b> clean sheet · `:''}<b>${c.gol}</b> gol · <b>${c.assist}</b> assist · media <b>${fmtV(c.media==null?null:c.media.toFixed(2))}</b> · <b>${c.mvp}</b> MVP</div>`:''}
   ${hist.length?`<div><div class="eyebrow" style="margin-bottom:6px">Partita per partita</div><div class="rowlist">${hist.map(m=>{const r=m.pagelle[id];const has=r.voto!==''&&r.voto!=null;const d=pd(m.data);
     const tags=[m.mvp===id?'<span class="pgl-tag mvp">MVP</span>':'',m.bombola===id?'<span class="pgl-tag bo">Bombola</span>':'',+r.gol?`<span class="pgl-tag">${r.gol} gol</span>`:'',+r.assist?`<span class="pgl-tag">${r.assist} ass.</span>`:''].join('');
     return `<div class="pgl-row" data-act="open-match" data-id="${m.id}"><span class="dcol"><b>${d?d.getDate():''}</b><span>${d?d.toLocaleDateString('it-IT',{month:'short'}):''}</span></span><div style="min-width:0"><div class="pgl-name" style="font-size:1.05rem">${esc(m.avversario)} <span style="color:var(--muted)">${goals(m)}–${+m.golLoro||0}</span> ${tags}</div>${r.nota?`<div class="pgl-nota">${esc(r.nota)}</div>`:''}</div><span class="pgl-v ${has?vcls(+r.voto):'sv'}">${has?fmtV(+r.voto):'s.v.'}</span></div>`}).join('')}</div></div>`:'<div class="empty">Ancora nessuna presenza a referto.</div>'}
