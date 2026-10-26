@@ -121,9 +121,6 @@ main{padding-block:22px 60px}
 .stk-in{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s}
 .stk.flip .stk-in{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden;border:5px solid #f4f7f2;background:var(--surface);box-shadow:var(--shadow);display:flex;flex-direction:column}
-.stk.oro .face{border-color:var(--gold)}
-.stk.argento .face{border-color:#c9d3dc}
-.stk.base .face{border-color:#f4f7f2}
 .face.back{transform:rotateY(180deg);padding:12px;gap:6px;background:var(--surface-2)}
 .photo{flex:1;position:relative;background:
   repeating-linear-gradient(135deg,rgba(133,248,67,.18) 0 10px,transparent 10px 20px),var(--surface-2);display:grid;place-items:center;overflow:hidden;min-height:0}
@@ -131,9 +128,7 @@ main{padding-block:22px 60px}
 .photo .ini{font-family:var(--f-brush);font-size:3.4rem;color:var(--neon);text-shadow:3px 3px 0 #000}
 .stk-num{position:absolute;top:6px;left:6px;background:var(--neon);color:var(--on-neon);font-family:var(--f-display);font-weight:900;font-size:1.3rem;line-height:1;padding:4px 7px;border-radius:6px}
 .stk-tier{position:absolute;top:6px;right:6px;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:rgba(7,17,29,.8);color:var(--ink)}
-.stk.oro .stk-tier{color:var(--gold)}
 .nameplate{background:#f4f7f2;color:#07111d;padding:6px 8px 7px}
-.stk.oro .nameplate{background:var(--gold)}
 .nameplate b{display:block;font-family:var(--f-display);font-weight:900;font-size:1.25rem;text-transform:uppercase;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nameplate span{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .back h3{font-family:var(--f-display);font-weight:900;font-size:1.3rem;text-transform:uppercase;line-height:1}
@@ -141,7 +136,12 @@ main{padding-block:22px 60px}
 .back dl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin:4px 0 0;font-size:.85rem}
 .back dt{color:var(--muted)} .back dd{margin:0;font-weight:700;text-align:right}
 .back .motto-s{font-size:.78rem;font-style:italic;color:var(--muted);margin-top:auto;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
-.back .open{margin-top:6px}
+.back .open{margin-top:8px;flex:none;width:100%;text-align:center;background:var(--neon);border-color:var(--neon);color:var(--on-neon)}
+.stk .face.back{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--m2) transparent}
+.stk .face.back>*{flex:none}
+.stk .back dt{white-space:nowrap}
+.stk .back .open{white-space:nowrap;font-size:.8rem;padding-inline:6px}
+.stk .face.back .motto-s{-webkit-line-clamp:unset;display:block;margin-top:4px}
 
 /* TABLE */
 .tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
@@ -523,6 +523,41 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 .tour-head span{font-size:.82rem;color:var(--muted)}
 .tour-cup{flex:none;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--gold);font-weight:700;font-size:.72rem}
 .tour-cup svg{width:52px;height:62px}
+
+/* ===== FIGURINE: argento, oro, oro raro ===== */
+.stk{--m1:#f4f7fa;--m2:#a9b4bf;--m3:#e6ebf0;--m4:#77838f;--ink-plate:#0e1620;--stripe:rgba(205,214,224,.16);--ini:#e6ebf0;--deep:#141c26}
+.stk.oro{--m1:#fff3c4;--m2:#d4a017;--m3:#ffe48a;--m4:#946a0c;--ink-plate:#2a1d02;--stripe:rgba(255,210,74,.16);--ini:#ffd24a;--deep:#1d1606}
+.stk.raro{--m1:#fff8d6;--m2:#e0a91c;--m3:#fff0a8;--m4:#7a5306;--ink-plate:#231800;--stripe:rgba(255,226,122,.22);--ini:#ffe27a;--deep:#140d00}
+.stk .face{border:0;padding:5px;background:linear-gradient(135deg,var(--m1) 0%,var(--m2) 28%,var(--m3) 50%,var(--m4) 74%,var(--m1) 100%);gap:0}
+.stk .face>.photo{border-radius:8px 8px 0 0}
+.stk .photo{background:repeating-linear-gradient(135deg,var(--stripe) 0 10px,transparent 10px 20px),linear-gradient(160deg,#1a2531,var(--deep))}
+.stk .photo .ini{color:var(--ini)}
+.stk .nameplate{background:linear-gradient(180deg,var(--m1),var(--m3) 45%,var(--m2));color:var(--ink-plate);border-radius:0 0 8px 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.stk .stk-num{background:linear-gradient(180deg,var(--m1),var(--m2));color:var(--ink-plate);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.stk .stk-tier{color:var(--m3)}
+.stk .face.back{padding:12px;background:linear-gradient(var(--deep),var(--deep)) padding-box,linear-gradient(135deg,var(--m1),var(--m2) 30%,var(--m3) 52%,var(--m4) 76%,var(--m1)) border-box;border:5px solid transparent}
+.stk .back .nick{color:var(--m3)}
+.stk.argento .back .nick{color:var(--neon)}
+/* oro raro: lamina spessa, filetto interno, brillantini e riflesso */
+.stk.raro .face{padding:7px;background:linear-gradient(135deg,#fff8d6 0%,#e0a91c 18%,#fff0a8 34%,#b47d0a 52%,#ffe48a 68%,#7a5306 84%,#fff3c4 100%);box-shadow:0 0 0 1px #7a5306,0 10px 26px rgba(224,169,28,.35)}
+.stk.raro .face.back{padding:12px;border:7px solid transparent;box-shadow:0 0 0 1px #7a5306,0 10px 26px rgba(224,169,28,.35);background:linear-gradient(var(--deep),var(--deep)) padding-box,linear-gradient(135deg,#fff8d6 0%,#e0a91c 18%,#fff0a8 34%,#b47d0a 52%,#ffe48a 68%,#7a5306 84%,#fff3c4 100%) border-box}
+.stk.raro .photo{background:
+  radial-gradient(circle at 22% 30%,rgba(255,240,168,.9) 0 1px,transparent 2px),
+  radial-gradient(circle at 76% 18%,rgba(255,240,168,.8) 0 1px,transparent 2px),
+  radial-gradient(circle at 64% 70%,rgba(255,240,168,.7) 0 1.5px,transparent 2.5px),
+  radial-gradient(circle at 34% 82%,rgba(255,240,168,.7) 0 1px,transparent 2px),
+  conic-gradient(from 200deg at 50% 115%,rgba(255,210,74,.0),rgba(255,210,74,.28),rgba(255,210,74,.0) 30%,rgba(255,210,74,.22) 45%,rgba(255,210,74,0) 60%),
+  radial-gradient(ellipse 90% 70% at 50% 35%,#5a3d07,#140d00 75%)}
+.stk.raro .photo::before{content:"";position:absolute;inset:6px;border:1px solid rgba(255,228,138,.55);border-radius:5px;pointer-events:none;z-index:1}
+.stk.raro .photo .ini{text-shadow:0 0 18px rgba(255,210,74,.6),3px 3px 0 #000}
+.stk.raro .stk-tier{background:linear-gradient(180deg,#fff0a8,#d4a017);color:#231800}
+.stk.raro .nameplate{background:linear-gradient(180deg,#fff8d6,#ffe48a 40%,#d4a017 80%,#b47d0a)}
+.stk.raro .face.front::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:3;mix-blend-mode:screen;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.0) 38%,rgba(255,250,220,.55) 46%,rgba(170,255,240,.25) 50%,rgba(255,200,255,.2) 53%,transparent 62%);background-size:260% 100%;background-position:120% 0}
+@media (prefers-reduced-motion:no-preference){
+  .stk.raro .face.front::after{animation:foil 4.2s ease-in-out infinite}
+  @keyframes foil{0%,35%{background-position:130% 0}75%,100%{background-position:-40% 0}}
+}
 </style>
 </head>
 <body>
@@ -596,7 +631,7 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 
   <section data-sec="figurine" hidden>
     <div class="sec-head"><h2>Album figurine</h2><span class="eyebrow" id="albumCount"></span></div>
-    <p class="album-intro">Tocca una figurina per girarla. Bordo oro con media voto da 7 in su, argento da 6 in su.</p>
+    <p class="album-intro">Tocca una figurina per girarla. Argento di base, oro con media voto da 6, oro raro da 7 in su.</p>
     <div id="album"></div>
   </section>
 
@@ -743,7 +778,7 @@ function renderMatches(){
   $('matchList').innerHTML=h;
 }
 function initials(n){return String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join('')}
-function tier(s){return s.media!=null&&s.media>=7?'oro':s.media!=null&&s.media>=6?'argento':'base'}
+function tier(s){return s.media!=null&&s.media>=7?'raro':s.media!=null&&s.media>=6?'oro':'argento'}
 const flipped=new Set();
 function renderAlbum(st){
   const ps=seasonRoster(st);const withPh=ps.filter(p=>p.foto).length;const car=S.season==='sempre'?null:stats(S.allMatches);
@@ -752,7 +787,7 @@ function renderAlbum(st){
   $('album').innerHTML='<div class="album">'+ps.map(p=>{const s=st[p.id];const t=tier(s);
     return `<button class="stk ${t} ${flipped.has(p.id)?'flip':''}" data-act="flip" data-id="${p.id}" aria-label="Figurina di ${esc(p.nome)}"><div class="stk-in">
     <div class="face front"><div class="photo">${p.foto?`<img src="${esc(p.foto)}" alt="">`:`<span class="ini">${esc(initials(p.nome))}</span>`}
-      <span class="stk-num">${esc(p.numero||'–')}</span><span class="stk-tier">${p.ritirato?'Ritirato':t==='oro'?'Oro':t==='argento'?'Argento':'Base'}</span></div>
+      <span class="stk-num">${esc(p.numero||'–')}</span><span class="stk-tier">${p.ritirato?'Ritirato':t==='raro'?'Oro raro':t==='oro'?'Oro':'Argento'}</span></div>
       <div class="nameplate"><b>${esc(p.nome)}</b><span>${esc(p.ruolo||'')}</span></div></div>
     <div class="face back"><h3>${esc(p.nome)}</h3><div class="nick">${p.soprannome?esc(p.soprannome):'&nbsp;'}</div>
       <dl><dt>Presenze</dt><dd>${s.pres}</dd><dt>Gol</dt><dd>${s.gol}</dd><dt>Assist</dt><dd>${s.assist}</dd><dt>Media voto</dt><dd>${fmtV(s.media==null?null:s.media.toFixed(2))}</dd><dt>MVP</dt><dd>${s.mvp}</dd><dt>Bombole</dt><dd>${s.bomb}</dd>${car?`<dt>Carriera</dt><dd>${car[p.id].pres} pres · ${car[p.id].gol} gol</dd>`:''}</dl>
