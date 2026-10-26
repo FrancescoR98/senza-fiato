@@ -552,12 +552,23 @@ footer{border-top:1px solid var(--line);padding-block:20px 30px;color:var(--mute
 .stk.raro .photo .ini{text-shadow:0 0 18px rgba(255,210,74,.6),3px 3px 0 #000}
 .stk.raro .stk-tier{background:linear-gradient(180deg,#fff0a8,#d4a017);color:#231800}
 .stk.raro .nameplate{background:linear-gradient(180deg,#fff8d6,#ffe48a 40%,#d4a017 80%,#b47d0a)}
-.stk.raro .face.front::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:3;mix-blend-mode:screen;
-  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.0) 38%,rgba(255,250,220,.55) 46%,rgba(170,255,240,.25) 50%,rgba(255,200,255,.2) 53%,transparent 62%);background-size:260% 100%;background-position:120% 0}
+.stk.raro .face.front::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;z-index:3;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0) 38%,rgba(255,250,220,.32) 46%,rgba(170,255,240,.14) 50%,rgba(255,200,255,.12) 53%,transparent 62%);background-size:260% 100%;background-position:120% 0}
 @media (prefers-reduced-motion:no-preference){
   .stk.raro .face.front::after{animation:foil 4.2s ease-in-out infinite}
   @keyframes foil{0%,35%{background-position:130% 0}75%,100%{background-position:-40% 0}}
 }
+
+/* giro della figurina affidabile anche su iPhone (Safari) */
+.face{-webkit-backface-visibility:hidden}
+.face.front{transform:rotateY(0deg) translateZ(1px)}
+.stk .face.back,.face.back{transform:rotateY(180deg) translateZ(1px)}
+.stk .face.front{visibility:visible;transition:visibility 0s .25s}
+.stk.flip .face.front{visibility:hidden}
+.stk .face.back{visibility:hidden;transition:visibility 0s .25s}
+.stk.flip .face.back{visibility:visible}
+.stk.flip .face.front::after{animation:none;display:none}
+@media (prefers-reduced-motion:reduce){.stk .face.front,.stk .face.back{transition:none}}
 </style>
 </head>
 <body>
